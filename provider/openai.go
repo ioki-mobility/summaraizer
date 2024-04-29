@@ -1,14 +1,18 @@
 package provider
 
 import (
+	"fmt"
+
 	summaraizer "github.com/ioki-mobility/summaraizer/types"
 )
 
-type OpenAi struct{}
+type OpenAi struct {
+	Model    string
+	ApiToken string
+}
 
 func (o OpenAi) Summarize(
-	model string,
 	comments summaraizer.Comments,
 ) (string, error) {
-	return "This is a summary from OpenAi", nil
+	return fmt.Sprintf("This is a summary from OpenAI with model %s", o.Model), nil
 }
