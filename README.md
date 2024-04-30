@@ -7,63 +7,56 @@ Summarize GitHub issue (or pull request) comments.
 * Go installed (version `1.22.2`, `brew install go`)
 * Ollama installed (`brew install ollama`)
 * Any model installed via Ollama
-  * `ollama serve`
-  * `ollama pull mistral:7b` 
+    * `ollama serve`
+    * `ollama pull mistral:7b`
 
 ## Usage
 
 ```bash
-go run cli/cli.go -owner <owner> -repo <repo> -issue-number <issue-number> [-ai-provider <ai-provider>] [-ai-model <ai-model>] [-token <token>]
+go run cli/cli.go <aiProvider> <customAiProviderParams> --owner <owner> --repo <repo> --issue-number <issueNumber> [--token <token>]
 ```
 
-The `ai-provider` can be changed to one of our supported providers. 
-Right now only `ollama` is supported. 
-Defaults to `ollama`.
+You can also run `--help` to get the list of available `commands`, `arguments` and `flags`.
 
-The `ai-model` can be changed to any model supported by the `ai-provider`.
-Defaults to `mistral:7b`.
-
-The GitHub `token` is only required for private repositories.
+| Command                  | Description                                                                        |
+|--------------------------|------------------------------------------------------------------------------------| 
+| `aiProvider`             | One of `ollama`, `mistral`, `openai`. Defaults to `ollama`.                        |
+| `customAiProviderParams` | The custom parameters for the AI provider. Depending on the selected `aiProvider`. |
+| `--owner`                | The owner of the GitHub repository.                                                |
+| `--repo`                 | The GitHub repository name.                                                        |
+| `--issue-number`         | The GitHub issue number.                                                           |
+| `--token`                | (Optional) The GitHub API token. It is only required for private repos.            |
 
 **Example:**
 
 ```bash 
-go run cli/cli.go -owner golang -repo go -issue-number 66960
+go run cli/cli.go ollama --url http://localhost:11434 --ai-model llama3 --owner golang --repo go --issue-number 66960
 ```
 
-**This resulted with `Ollama` & `mistral:7b` to the following output:**
+This will run the CLI with the `ollama` AI provider, pointing to a local `ollama` instance, 
+using the `llama3` model, for [`golang/go/issues/66960`](https://github.com/golang/go/issues/66960).
 
-The proposed `sync.LazyChannel` implementation using `sync.OnceValue` has some issues. Here's why:
+<details>
 
-1. It requires the user to initialize the channel value with an anonymous function, which is not a common idiom and may lead to confusion for new Go programmers.
-2. The initialization of the channel happens outside the scope of the `sync.LazyChannel` type, making it harder to reason about when the channel is actually initialized and ready to use.
-3. There is no way to support buffered channels using this approach because there is no way to pass a buffer size as a type parameter in Go.
-4. The implementation of `sync.OnceValue` uses an internal mutex for synchronization during initialization, which may add unnecessary contention in multithreaded scenarios.
+<summary><b>The example above produced the following output:</b></summary>
 
-An alternative approach that addresses some of these issues is using a struct with a single field (the channel) and a method to initialize it on demand using `sync.Once`. Here's the updated implementation:
+Here is a summary of the discussion:
 
-```go
-type LazyChannel[T] struct {
-        ch chan T
-        once sync.Once
-}
+The proposal is for a new type `atomic.Chan` that allows for atomic access to a channel. 
+The motivation behind this proposal is to improve existing code that uses `atomic.Value` and `*hchan` to create lazy channels,
+which have 488 matches in GitHub search results.
 
-func (lc *LazyChannel[T]) Ch() chan T {
-        if lc.ch == nil {
-                lc.once.Do(func () { lc.ch = make(chan T) })
-        }
-        return lc.ch
-}
-```
+The current implementation of lazy channels requires the use of `sync.Once`, 
+which has some drawbacks such as increasing the footprint and making on-demand channel swapping more complicated. 
+The proposed `atomic.Chan` type would enable no new code but improve existing code by providing a more efficient 
+and clear way to implement lazy channels.
 
-This implementation uses a struct with a single field (the channel) and a method `Ch()` to initialize the channel on demand using `sync.Once`. 
-The initialization only happens once, making the zero value of the `LazyChannel` type ready to use.
+Some examples of where this proposal could be used include
+[pkg context](https://github.com/golang/go/blob/go1.22.2/src/context/context.go#L425), 
+[gRPC-Go](https://github.com/grpc/grpc-go/blob/v1.63.2/internal/transport/controlbuf.go#L311), and others.
 
-This approach does not require the user to initialize the channel value with an anonymous function and keeps all initialization logic within the `LazyChannel` type. 
-It also supports buffered channels by simply passing the desired buffer size when creating the `make(chan T, bufferSize)`. 
-The implementation of `sync.Once` uses an internal mutex for synchronization during initialization, but only once per goroutine, making it more efficient than the earlier proposed approach.
+The discussion also touched on the idea that if this proposal is approved, 
+it could set a precedent for approving similar proposals for other Go types
+that are secretly just pointers to a special data structure or involve pointers, such as `string`, `slice`, and `map`.
 
-This implementation still requires some boilerplate code to set up the type and method, 
-but it's a more straightforward solution that better fits the Go idiom of composing types to build more complex data structures.
-
-**End of output**
+</details>
