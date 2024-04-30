@@ -116,6 +116,9 @@ func main() {
 	rootCmd.PersistentFlags().String("owner", "", "GitHub Repository Owner")
 	rootCmd.PersistentFlags().String("repo", "", "GitHub Repository Name")
 	rootCmd.PersistentFlags().String("issue-number", "", "GitHub Issue Number")
+	rootCmd.MarkPersistentFlagRequired("owner")
+	rootCmd.MarkPersistentFlagRequired("repo")
+	rootCmd.MarkPersistentFlagRequired("issue-number")
 
 	ollamaCmd.PersistentFlags().String("ai-model", "mistral:7b", "AI Model")
 	ollamaCmd.PersistentFlags().String("url", "http://localhost:11434", "The URl where ollama is accessible")
@@ -123,10 +126,12 @@ func main() {
 
 	mistralCmd.PersistentFlags().String("ai-model", "mistral-small-latest", "AI Model")
 	mistralCmd.PersistentFlags().String("api-token", "", "The API Token for Mistral")
+	mistralCmd.MarkPersistentFlagRequired("api-token")
 	rootCmd.AddCommand(mistralCmd)
 
 	openaiCmd.PersistentFlags().String("ai-model", "gpt-3.5-turbo", "AI Model")
 	openaiCmd.PersistentFlags().String("api-token", "", "The API Token for OpenAI")
+	openaiCmd.MarkPersistentFlagRequired("api-token")
 	rootCmd.AddCommand(openaiCmd)
 
 	if err := rootCmd.Execute(); err != nil {
