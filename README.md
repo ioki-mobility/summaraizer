@@ -13,7 +13,7 @@ Summarize GitHub issue (or pull request) comments.
 ## Usage
 
 ```bash
-go run cli/cli.go <aiProvider> <customAiProviderParams> --owner <owner> --repo <repo> --issue-number <issueNumber> [--token <token>]
+go run cmd/summaraizer/summaraizer.go <aiProvider> <customAiProviderParams> --owner <owner> --repo <repo> --issue-number <issueNumber> [--token <token>]
 ```
 
 You can also run `--help` to get the list of available `commands`, `arguments` and `flags`.
@@ -30,7 +30,7 @@ You can also run `--help` to get the list of available `commands`, `arguments` a
 **Example:**
 
 ```bash 
-go run cli/cli.go ollama --url http://localhost:11434 --ai-model llama3 --owner golang --repo go --issue-number 66960
+go run cmd/summaraizer/summaraizer.go ollama --url http://localhost:11434 --ai-model llama3 --owner golang --repo go --issue-number 66960
 ```
 
 This will run the CLI with the `ollama` AI provider, pointing to a local `ollama` instance, 

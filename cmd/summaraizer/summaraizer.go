@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	summaraizer "github.com/ioki-mobility/summaraizer"
+	"github.com/ioki-mobility/summaraizer"
 	"github.com/ioki-mobility/summaraizer/provider"
+	"github.com/ioki-mobility/summaraizer/source"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +25,7 @@ var ollamaCmd = &cobra.Command{
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
 		issueNumber, _ := cmd.Flags().GetString("issue-number")
-		gitHubInput := summaraizer.GitHubInput{
+		gitHubInput := &source.GitHub{
 			Token:       token,
 			RepoOwner:   owner,
 			RepoName:    repo,
@@ -32,10 +33,10 @@ var ollamaCmd = &cobra.Command{
 		}
 
 		aiModel, _ := cmd.Flags().GetString("ai-model")
-		ollamaUrl, _ := cmd.Flags().GetString("url")
-		provider := provider.Ollama{
+		url, _ := cmd.Flags().GetString("url")
+		provider := &provider.Ollama{
 			Model: aiModel,
-			Url:   ollamaUrl,
+			Url:   url,
 		}
 
 		summarization, err := summaraizer.Summarize(gitHubInput, provider)
@@ -56,7 +57,7 @@ var mistralCmd = &cobra.Command{
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
 		issueNumber, _ := cmd.Flags().GetString("issue-number")
-		gitHubInput := summaraizer.GitHubInput{
+		gitHub := &source.GitHub{
 			Token:       token,
 			RepoOwner:   owner,
 			RepoName:    repo,
@@ -65,12 +66,12 @@ var mistralCmd = &cobra.Command{
 
 		aiModel, _ := cmd.Flags().GetString("ai-model")
 		apiToken, _ := cmd.Flags().GetString("api-token")
-		provider := provider.Mistral{
+		provider := &provider.Mistral{
 			Model:    aiModel,
 			ApiToken: apiToken,
 		}
 
-		summarization, err := summaraizer.Summarize(gitHubInput, provider)
+		summarization, err := summaraizer.Summarize(gitHub, provider)
 		if err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
@@ -88,7 +89,7 @@ var openaiCmd = &cobra.Command{
 		owner, _ := cmd.Flags().GetString("owner")
 		repo, _ := cmd.Flags().GetString("repo")
 		issueNumber, _ := cmd.Flags().GetString("issue-number")
-		gitHubInput := summaraizer.GitHubInput{
+		gitHubInput := &source.GitHub{
 			Token:       token,
 			RepoOwner:   owner,
 			RepoName:    repo,
@@ -97,7 +98,7 @@ var openaiCmd = &cobra.Command{
 
 		aiModel, _ := cmd.Flags().GetString("ai-model")
 		apiToken, _ := cmd.Flags().GetString("api-token")
-		provider := provider.OpenAi{
+		provider := &provider.OpenAi{
 			Model:    aiModel,
 			ApiToken: apiToken,
 		}
