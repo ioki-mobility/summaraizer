@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	summaraizer "github.com/ioki-mobility/summaraizer/types"
+	"github.com/ioki-mobility/summaraizer"
 )
 
 type Ollama struct {
@@ -15,7 +15,7 @@ type Ollama struct {
 	Url   string
 }
 
-func (o Ollama) Summarize(
+func (o *Ollama) Summarize(
 	comments summaraizer.Comments,
 ) (string, error) {
 	var commentsPrompt string
