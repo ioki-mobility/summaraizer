@@ -35,8 +35,10 @@ var ollamaCmd = &cobra.Command{
 		aiModel, _ := cmd.Flags().GetString("ai-model")
 		url, _ := cmd.Flags().GetString("url")
 		provider := &provider.Ollama{
-			Model: aiModel,
-			Url:   url,
+			Common: provider.Common{
+				Model: aiModel,
+			},
+			Url: url,
 		}
 
 		summarization, err := summaraizer.Summarize(gitHubInput, provider)
@@ -67,7 +69,9 @@ var mistralCmd = &cobra.Command{
 		aiModel, _ := cmd.Flags().GetString("ai-model")
 		apiToken, _ := cmd.Flags().GetString("api-token")
 		provider := &provider.Mistral{
-			Model:    aiModel,
+			Common: provider.Common{
+				Model: aiModel,
+			},
 			ApiToken: apiToken,
 		}
 
@@ -99,7 +103,9 @@ var openaiCmd = &cobra.Command{
 		aiModel, _ := cmd.Flags().GetString("ai-model")
 		apiToken, _ := cmd.Flags().GetString("api-token")
 		provider := &provider.OpenAi{
-			Model:    aiModel,
+			Common: provider.Common{
+				Model: aiModel,
+			},
 			ApiToken: apiToken,
 		}
 

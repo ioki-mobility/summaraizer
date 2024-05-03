@@ -10,9 +10,10 @@ import (
 	"github.com/ioki-mobility/summaraizer"
 )
 
+// Ollama is a provider that uses Ollama as an AI provider.
 type Ollama struct {
-	Model string
-	Url   string
+	Common
+	Url string
 }
 
 func (o *Ollama) Summarize(
