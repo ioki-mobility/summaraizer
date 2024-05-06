@@ -33,10 +33,12 @@ var ollamaCmd = &cobra.Command{
 		}
 
 		aiModel, _ := cmd.Flags().GetString("ai-model")
+		aiPrompt, _ := cmd.Flags().GetString("ai-prompt")
 		url, _ := cmd.Flags().GetString("url")
 		provider := &provider.Ollama{
 			Common: provider.Common{
-				Model: aiModel,
+				Model:  aiModel,
+				Prompt: aiPrompt,
 			},
 			Url: url,
 		}
@@ -67,10 +69,12 @@ var mistralCmd = &cobra.Command{
 		}
 
 		aiModel, _ := cmd.Flags().GetString("ai-model")
+		aiPrompt, _ := cmd.Flags().GetString("ai-prompt")
 		apiToken, _ := cmd.Flags().GetString("api-token")
 		provider := &provider.Mistral{
 			Common: provider.Common{
-				Model: aiModel,
+				Model:  aiModel,
+				Prompt: aiPrompt,
 			},
 			ApiToken: apiToken,
 		}
@@ -101,10 +105,12 @@ var openaiCmd = &cobra.Command{
 		}
 
 		aiModel, _ := cmd.Flags().GetString("ai-model")
+		aiPrompt, _ := cmd.Flags().GetString("ai-prompt")
 		apiToken, _ := cmd.Flags().GetString("api-token")
 		provider := &provider.OpenAi{
 			Common: provider.Common{
-				Model: aiModel,
+				Model:  aiModel,
+				Prompt: aiPrompt,
 			},
 			ApiToken: apiToken,
 		}
@@ -127,16 +133,16 @@ func main() {
 	rootCmd.MarkPersistentFlagRequired("repo")
 	rootCmd.MarkPersistentFlagRequired("issue-number")
 
-	ollamaCmd.PersistentFlags().String("ai-model", "mistral:7b", "AI Model")
+	createDefaultAiFlags(ollamaCmd, "mistral:7b", defaultPromptTemplate)
 	ollamaCmd.PersistentFlags().String("url", "http://localhost:11434", "The URl where ollama is accessible")
 	rootCmd.AddCommand(ollamaCmd)
 
-	mistralCmd.PersistentFlags().String("ai-model", "mistral-small-latest", "AI Model")
+	createDefaultAiFlags(mistralCmd, "mistral:7b", defaultPromptTemplate)
 	mistralCmd.PersistentFlags().String("api-token", "", "The API Token for Mistral")
 	mistralCmd.MarkPersistentFlagRequired("api-token")
 	rootCmd.AddCommand(mistralCmd)
 
-	openaiCmd.PersistentFlags().String("ai-model", "gpt-3.5-turbo", "AI Model")
+	createDefaultAiFlags(openaiCmd, "gpt-3.5-turbo", defaultPromptTemplate)
 	openaiCmd.PersistentFlags().String("api-token", "", "The API Token for OpenAI")
 	openaiCmd.MarkPersistentFlagRequired("api-token")
 	rootCmd.AddCommand(openaiCmd)
@@ -146,3 +152,18 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+func createDefaultAiFlags(cmd *cobra.Command, model string, prompt string) {
+	cmd.PersistentFlags().String("ai-model", model, "AI Model")
+	cmd.PersistentFlags().String("ai-prompt", prompt, "The prompt to use for the AI model")
+}
+
+var defaultPromptTemplate = `
+I give you a discussion and you give me a summary.
+Each comment of the discussion is wrapped in a <comment> tag.
+Your summary should not be longer than 1200 chars.
+Here is the discussion:
+{{ range $comment := . }}
+<comment>{{ $comment.Body }}</comment>
+{{end}}
+`

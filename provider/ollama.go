@@ -19,13 +19,14 @@ type Ollama struct {
 func (o *Ollama) Summarize(
 	comments summaraizer.Comments,
 ) (string, error) {
-	var commentsPrompt string
-	for _, comment := range comments {
-		commentsPrompt += fmt.Sprintf("<comment>%s</comment>", comment)
+	prompt, err := resolvePrompt(o.Common.Prompt, comments)
+	if err != nil {
+		return "", err
 	}
+
 	reqJson := make(map[string]any)
 	reqJson["model"] = o.Model
-	reqJson["prompt"] = "I give you a discussion and you give me a summary. Each comment of the discussion is wrapped in a <comment> tag. Your summary should not be longer than 1200 chars. Here is the discussion: " + commentsPrompt
+	reqJson["prompt"] = prompt
 	reqJson["stream"] = false
 	reqBodyBytes, err := json.Marshal(reqJson)
 	if err != nil {
