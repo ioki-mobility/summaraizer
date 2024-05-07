@@ -6,8 +6,9 @@ import (
 	"github.com/ioki-mobility/summaraizer"
 )
 
+// OpenAi is a provider that uses OpenAI API as an AI provider.
 type OpenAi struct {
-	Model    string
+	Common
 	ApiToken string
 }
 

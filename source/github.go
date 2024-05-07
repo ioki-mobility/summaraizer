@@ -9,6 +9,7 @@ import (
 	"github.com/ioki-mobility/summaraizer"
 )
 
+// GitHub is a source that fetches comments from a GitHub issue or pull request.
 type GitHub struct {
 	Token       string
 	RepoOwner   string

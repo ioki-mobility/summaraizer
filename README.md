@@ -27,7 +27,40 @@ You can also run `--help` to get the list of available `commands`, `arguments` a
 | `--issue-number`         | The GitHub issue number.                                                           |
 | `--token`                | (Optional) The GitHub API token. It is only required for private repos.            |
 
-**Example:**
+### Common AIProvider Parameters
+
+There are some common parameters that can be used with all AI providers, namely, `--ai-model` and `--ai-prompt`.
+The following sections describe these parameters.
+
+#### AiModel
+
+The `--ai-model` parameter is used to specify the model to be used by the AI provider.
+You have to check the documentation of the AI provider to know which models are available.
+
+#### AiPrompt
+
+The `--ai-prompt` parameter is used to specify the prompt to be used by the AI provider.
+The prompt make use of Go's [`text/template` package](https://pkg.go.dev/text/template) to render the prompt.
+The prompt will receive a `struct` in form of `Comments`, with the following structure:
+```go
+type Comments []Comment
+
+type Comment struct {
+    Author string
+    Body   string
+}
+```
+You could, for example, inject the following prompt:
+```go
+var myAwesomeTemplate = `
+Please summarize the following discussions between different Authors.
+{{ range $comment := . }}
+Author {{ $comment.Author }} said: {{ $comment.Body }}
+{{ end }}
+`
+```
+
+## Example
 
 ```bash 
 go run cmd/summaraizer/summaraizer.go ollama --url http://localhost:11434 --ai-model llama3 --owner golang --repo go --issue-number 66960

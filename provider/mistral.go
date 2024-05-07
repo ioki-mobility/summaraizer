@@ -6,8 +6,9 @@ import (
 	"github.com/ioki-mobility/summaraizer"
 )
 
+// Mistral is a provider that uses the Mistral API as an AI provider.
 type Mistral struct {
-	Model    string
+	Common
 	ApiToken string
 }
 
