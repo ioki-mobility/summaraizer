@@ -24,11 +24,12 @@ func (o *Ollama) Summarize(
 		return "", err
 	}
 
-	reqJson := make(map[string]any)
-	reqJson["model"] = o.Model
-	reqJson["prompt"] = prompt
-	reqJson["stream"] = false
-	reqBodyBytes, err := json.Marshal(reqJson)
+	request := ollamaRequest{
+		Model:  o.Model,
+		Prompt: prompt,
+		Stream: false,
+	}
+	reqBodyBytes, err := json.Marshal(request)
 	if err != nil {
 		return "", err
 	}
@@ -45,16 +46,24 @@ func (o *Ollama) Summarize(
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return "", nil
+		return "", err
 	}
 
-	var responseJson map[string]any
-	err = json.Unmarshal(respBody, &responseJson)
+	var response ollamaResponse
+	err = json.Unmarshal(respBody, &response)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return "", nil
+		return "", err
 	}
 
-	return responseJson["response"].(string), nil
+	return response.Response, nil
+}
+
+type ollamaRequest struct {
+	Model  string `json:"model"`
+	Prompt string `json:"prompt"`
+	Stream bool   `json:"stream"`
+}
+
+type ollamaResponse struct {
+	Response string `json:"response"`
 }
