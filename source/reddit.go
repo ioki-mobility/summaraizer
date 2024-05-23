@@ -15,7 +15,17 @@ type Reddit struct {
 }
 
 // Fetch fetches comments from a Reddit post.
-func (r *Reddit) Fetch() (summaraizer.Comments, error) {
+func (r *Reddit) Fetch(writer io.Writer) error {
+	comments, err := r.fetchInternal()
+	if err != nil {
+		return err
+	}
+
+	encoder := json.NewEncoder(writer)
+	return encoder.Encode(comments)
+}
+
+func (r *Reddit) fetchInternal() (summaraizer.Comments, error) {
 	request, err := http.NewRequest("GET", "https://www.reddit.com"+r.UrlPath+".json", nil)
 	request.Header.Set("User-Agent", "Go:summaraizer:0.0.0")
 	if err != nil {

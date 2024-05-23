@@ -17,7 +17,18 @@ type GitHub struct {
 	IssueNumber string
 }
 
-func (gh *GitHub) Fetch() (summaraizer.Comments, error) {
+// Fetch fetches comments from a GitHub issue.
+func (gh *GitHub) Fetch(writer io.Writer) error {
+	comments, err := gh.fetchInternal()
+	if err != nil {
+		return err
+	}
+
+	encoder := json.NewEncoder(writer)
+	return encoder.Encode(comments)
+}
+
+func (gh *GitHub) fetchInternal() (summaraizer.Comments, error) {
 	var comments summaraizer.Comments
 
 	issue := issue{

@@ -15,7 +15,16 @@ type OpenAi struct {
 	ApiToken string
 }
 
-func (o *OpenAi) Summarize(
+func (o *OpenAi) Summarize(reader io.Reader) (string, error) {
+	var comments summaraizer.Comments
+	decoder := json.NewDecoder(reader)
+	if err := decoder.Decode(&comments); err != nil {
+		return "", err
+	}
+	return o.summarizeInternal(comments)
+}
+
+func (o *OpenAi) summarizeInternal(
 	comments summaraizer.Comments,
 ) (string, error) {
 	prompt, err := resolvePrompt(o.Common.Prompt, comments)

@@ -12,14 +12,8 @@ import (
 )
 
 func main() {
-	sourceCmds := []*cobra.Command{githubCmd(), redditCmd()}
-	for _, cmd := range sourceCmds {
-		cmd.AddCommand(ollamaCmd())
-		cmd.AddCommand(mistralCmd())
-		cmd.AddCommand(openaiCmd())
-	}
-
-	rootCmd.AddCommand(sourceCmds...)
+	rootCmd.AddCommand(githubCmd(), redditCmd())
+	rootCmd.AddCommand(ollamaCmd(), mistralCmd(), openaiCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -33,221 +27,142 @@ var rootCmd = &cobra.Command{
 	Long:  "A tool to summarize comments from various sources using AI.",
 }
 
-type flag struct {
-	Name        string
-	Required    bool
-	Description string
-	Default     string
-}
-
-type gitHubFlag string
-
-const (
-	gitHubFlagIssue       gitHubFlag = "issue"
-	gitHubFlagSourceToken gitHubFlag = "source-token"
-)
-
 func githubCmd() *cobra.Command {
-	flags := []flag{
-		{
-			Name:        string(gitHubFlagIssue),
-			Required:    true,
-			Description: "The GitHub issue to summarize. Use the format owner/repo/issue_number.",
-		},
-		{
-			Name:        string(gitHubFlagSourceToken),
-			Required:    false,
-			Description: "The GitHub token to use as source",
+	flagIssue := "issue"
+	flagToken := "token"
+	var cmd = &cobra.Command{
+		Use:   "github",
+		Short: "Summarizes using GitHub as source",
+		Long:  "Summarizes using GitHub as source",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			issue, _ := cmd.Flags().GetString(flagIssue)
+			githubIssueParts := strings.Split(issue, "/")
+			token, _ := cmd.Flags().GetString(flagToken)
+
+			s := &source.GitHub{
+				Token:       token,
+				RepoOwner:   githubIssueParts[0],
+				RepoName:    githubIssueParts[1],
+				IssueNumber: githubIssueParts[2],
+			}
+			return fetch(s)
 		},
 	}
-	return createDefaultCmd(
-		"github",
-		"Summarizes using GitHub as source",
-		"Summarizes using GitHub as source",
-		flags,
-	)
+	cmd.Flags().String(flagIssue, "", "The GitHub issue to summarize. Use the format owner/repo/issue_number.")
+	cmd.MarkFlagRequired(flagIssue)
+	cmd.Flags().String(flagToken, "", "The GitHub token. Only required for private repositories.")
+
+	return cmd
 }
-
-type redditFlag string
-
-const (
-	redditFlagPost redditFlag = "post"
-)
 
 func redditCmd() *cobra.Command {
-	flags := []flag{
-		{
-			Name:        string(redditFlagPost),
-			Required:    true,
-			Description: "The Reddit post to summarize. Use the URL path. Everything after reddit.com.",
+	flagPost := "post"
+	cmd := &cobra.Command{
+		Use:   "reddit",
+		Short: "Summarizes using Reddit as source",
+		Long:  "Summarizes using Reddit as source.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			post, _ := cmd.Flags().GetString(flagPost)
+
+			s := &source.Reddit{
+				UrlPath: post,
+			}
+			return fetch(s)
 		},
 	}
-	return createDefaultCmd(
-		"reddit",
-		"Summarizes using Reddit as source",
-		"Summarizes using Reddit as source.",
-		flags,
-	)
-}
-
-type aiFlag string
-
-const (
-	aiFlagModel  aiFlag = "ai-model"
-	aiFlagPrompt aiFlag = "ai-prompt"
-)
-
-var defaultAiFlags = []flag{
-	{
-		Name:        string(aiFlagModel),
-		Required:    false,
-		Description: "The AI model to use",
-	},
-	{
-		Name:        string(aiFlagPrompt),
-		Required:    false,
-		Description: "The prompt to use for the AI model",
-		Default:     defaultPromptTemplate,
-	},
+	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path. Everything after reddit.com.")
+	cmd.MarkFlagRequired(flagPost)
+	return cmd
 }
 
 const (
-	ollamaFlagUrl aiFlag = "url"
+	aiFlagModel  string = "model"
+	aiFlagPrompt string = "prompt"
 )
 
 func ollamaCmd() *cobra.Command {
-	flags := []flag{
-		{
-			Name:        string(ollamaFlagUrl),
-			Required:    false,
-			Description: "The URl where ollama is accessible",
-			Default:     "http://localhost:11434",
+	flagUrl := "url"
+	var cmd = &cobra.Command{
+		Use:   "ollama",
+		Short: "Summarizes using Ollama AI",
+		Long:  "Summarizes using Ollama AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			url, _ := cmd.Flags().GetString(flagUrl)
+
+			p := &provider.Ollama{
+				Common: provider.Common{
+					Model:  aiModel,
+					Prompt: aiPrompt,
+				},
+				Url: url,
+			}
+
+			return summarize(p)
 		},
 	}
-	defaultAiFlags[0].Default = "gemma:2b"
-	flags = append(flags, defaultAiFlags...)
-	cmd := createDefaultCmd(
-		"ollama",
-		"Summarizes using Ollama AI",
-		"Summarizes using Ollama AI.",
-		flags,
-	)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		s := sourceByCmd(cmd.Parent())
-
-		aiModel, _ := cmd.Flags().GetString(string(aiFlagModel))
-		aiPrompt, _ := cmd.Flags().GetString(string(aiFlagPrompt))
-		url, _ := cmd.Flags().GetString(string(ollamaFlagUrl))
-		p := &provider.Ollama{
-			Common: provider.Common{
-				Model:  aiModel,
-				Prompt: aiPrompt,
-			},
-			Url: url,
-		}
-
-		return summarize(s, p)
-	}
+	cmd.Flags().String(aiFlagModel, "gemma:2b", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagUrl, "http://localhost:11434", "The URl where ollama is accessible")
 	return cmd
 }
-
-const (
-	mistralFlagToken aiFlag = "provider-token"
-)
 
 func mistralCmd() *cobra.Command {
-	flags := []flag{
-		{
-			Name:        string(mistralFlagToken),
-			Required:    true,
-			Description: "The API Token for Mistral",
+	flagToken := "token"
+	var cmd = &cobra.Command{
+		Use:   "mistral",
+		Short: "Summarizes using Mistral AI",
+		Long:  "Summarizes using Mistral AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &provider.Mistral{
+				Common: provider.Common{
+					Model:  aiModel,
+					Prompt: aiPrompt,
+				},
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
 		},
 	}
-	defaultAiFlags[0].Default = "mistral:7b"
-	flags = append(flags, defaultAiFlags...)
-	cmd := createDefaultCmd(
-		"mistral",
-		"Summarizes using Mistral AI",
-		"Summarizes using Mistral AI.",
-		flags,
-	)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		s := sourceByCmd(cmd.Parent())
-
-		aiModel, _ := cmd.Flags().GetString(string(aiFlagModel))
-		aiPrompt, _ := cmd.Flags().GetString(string(aiFlagPrompt))
-		apiToken, _ := cmd.Flags().GetString(string(mistralFlagToken))
-		p := &provider.Mistral{
-			Common: provider.Common{
-				Model:  aiModel,
-				Prompt: aiPrompt,
-			},
-			ApiToken: apiToken,
-		}
-
-		return summarize(s, p)
-	}
+	cmd.Flags().String(aiFlagModel, "mistral:7b", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagToken, "", "The API Token for Mistral")
+	cmd.MarkFlagRequired(flagToken)
 	return cmd
 }
-
-const (
-	openaiFlagToken aiFlag = "provider-token"
-)
 
 func openaiCmd() *cobra.Command {
-	flags := []flag{
-		{
-			Name:        string(openaiFlagToken),
-			Required:    true,
-			Description: "The API Token for OpenAI",
+	flagToken := "token"
+	cmd := &cobra.Command{
+		Use:   "openai",
+		Short: "Summarizes using OpenAI AI",
+		Long:  "Summarizes using OpenAI AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &provider.OpenAi{
+				Common: provider.Common{
+					Model:  aiModel,
+					Prompt: aiPrompt,
+				},
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
 		},
 	}
-	defaultAiFlags[0].Default = "gpt-3.5-turbo"
-	flags = append(flags, defaultAiFlags...)
-	cmd := createDefaultCmd(
-		"openai",
-		"Summarizes using OpenAI AI",
-		"Summarizes using OpenAI AI.",
-		flags,
-	)
-	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		s := sourceByCmd(cmd.Parent())
-
-		aiModel, _ := cmd.Flags().GetString(string(aiFlagModel))
-		aiPrompt, _ := cmd.Flags().GetString(string(aiFlagPrompt))
-		apiToken, _ := cmd.Flags().GetString(string(openaiFlagToken))
-		p := &provider.OpenAi{
-			Common: provider.Common{
-				Model:  aiModel,
-				Prompt: aiPrompt,
-			},
-			ApiToken: apiToken,
-		}
-
-		return summarize(s, p)
-	}
-	return cmd
-}
-
-func createDefaultCmd(
-	name string,
-	short string,
-	long string,
-	flags []flag,
-) *cobra.Command {
-	var cmd = &cobra.Command{
-		Use:   name,
-		Short: short,
-		Long:  long,
-	}
-
-	for _, flag := range flags {
-		cmd.PersistentFlags().String(flag.Name, flag.Default, flag.Description)
-		if flag.Required {
-			cmd.MarkPersistentFlagRequired(flag.Name)
-		}
-	}
-
+	cmd.Flags().String(aiFlagModel, "gpt-3.5-turbo", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagToken, "", "The API Token for OpenAI")
+	cmd.MarkFlagRequired(flagToken)
 	return cmd
 }
 
@@ -261,36 +176,19 @@ Here is the discussion:
 {{end}}
 `
 
-func sourceByCmd(cmd *cobra.Command) summaraizer.CommentSource {
-	switch cmd.Name() {
-	case "github":
-		token, _ := cmd.Flags().GetString(string(gitHubFlagSourceToken))
-
-		issue, _ := cmd.Flags().GetString(string(gitHubFlagIssue))
-		githubIssueParts := strings.Split(issue, "/")
-
-		return &source.GitHub{
-			Token:       token,
-			RepoOwner:   githubIssueParts[0],
-			RepoName:    githubIssueParts[1],
-			IssueNumber: githubIssueParts[2],
-		}
-	case "reddit":
-		post, _ := cmd.Flags().GetString(string(redditFlagPost))
-
-		return &source.Reddit{
-			UrlPath: post,
-		}
+func fetch(s summaraizer.CommentSource) error {
+	err := s.Fetch(os.Stdout)
+	if err != nil {
+		return err
 	}
-	panic("Unknown source")
+	return nil
 }
 
-func summarize(s summaraizer.CommentSource, p summaraizer.AiProvider) error {
-	summarization, err := summaraizer.Summarize(s, p)
+func summarize(p summaraizer.AiProvider) error {
+	summarization, err := p.Summarize(os.Stdin)
 	if err != nil {
 		return err
 	}
 	fmt.Println(summarization)
-
 	return nil
 }
