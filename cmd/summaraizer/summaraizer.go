@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/ioki-mobility/summaraizer"
-	"github.com/ioki-mobility/summaraizer/provider"
-	"github.com/ioki-mobility/summaraizer/source"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +37,7 @@ func githubCmd() *cobra.Command {
 			githubIssueParts := strings.Split(issue, "/")
 			token, _ := cmd.Flags().GetString(flagToken)
 
-			s := &source.GitHub{
+			s := &summaraizer.GitHub{
 				Token:       token,
 				RepoOwner:   githubIssueParts[0],
 				RepoName:    githubIssueParts[1],
@@ -64,7 +62,7 @@ func redditCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			post, _ := cmd.Flags().GetString(flagPost)
 
-			s := &source.Reddit{
+			s := &summaraizer.Reddit{
 				UrlPath: post,
 			}
 			return fetch(s)
@@ -91,8 +89,8 @@ func ollamaCmd() *cobra.Command {
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
 			url, _ := cmd.Flags().GetString(flagUrl)
 
-			p := &provider.Ollama{
-				Common: provider.Common{
+			p := &summaraizer.Ollama{
+				Common: summaraizer.Common{
 					Model:  aiModel,
 					Prompt: aiPrompt,
 				},
@@ -119,8 +117,8 @@ func mistralCmd() *cobra.Command {
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
 			apiToken, _ := cmd.Flags().GetString(flagToken)
 
-			p := &provider.Mistral{
-				Common: provider.Common{
+			p := &summaraizer.Mistral{
+				Common: summaraizer.Common{
 					Model:  aiModel,
 					Prompt: aiPrompt,
 				},
@@ -148,8 +146,8 @@ func openaiCmd() *cobra.Command {
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
 			apiToken, _ := cmd.Flags().GetString(flagToken)
 
-			p := &provider.OpenAi{
-				Common: provider.Common{
+			p := &summaraizer.OpenAi{
+				Common: summaraizer.Common{
 					Model:  aiModel,
 					Prompt: aiPrompt,
 				},
