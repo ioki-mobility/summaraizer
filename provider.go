@@ -12,12 +12,6 @@ type AiProvider interface {
 	Summarize(reader io.Reader) (string, error)
 }
 
-// Common is a generic struct that shares common fields between all AI providers.
-type Common struct {
-	Model  string // The Ai model to use.
-	Prompt string // The prompt to use for the AI model.
-}
-
 func decodeAndSummarize(reader io.Reader, f func(comments Comments) (string, error)) (string, error) {
 	var comments Comments
 	decoder := json.NewDecoder(reader)

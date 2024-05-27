@@ -90,11 +90,9 @@ func ollamaCmd() *cobra.Command {
 			url, _ := cmd.Flags().GetString(flagUrl)
 
 			p := &summaraizer.Ollama{
-				Common: summaraizer.Common{
-					Model:  aiModel,
-					Prompt: aiPrompt,
-				},
-				Url: url,
+				Model:  aiModel,
+				Prompt: aiPrompt,
+				Url:    url,
 			}
 
 			return summarize(p)
@@ -118,10 +116,8 @@ func mistralCmd() *cobra.Command {
 			apiToken, _ := cmd.Flags().GetString(flagToken)
 
 			p := &summaraizer.Mistral{
-				Common: summaraizer.Common{
-					Model:  aiModel,
-					Prompt: aiPrompt,
-				},
+				Model:    aiModel,
+				Prompt:   aiPrompt,
 				ApiToken: apiToken,
 			}
 
@@ -147,10 +143,8 @@ func openaiCmd() *cobra.Command {
 			apiToken, _ := cmd.Flags().GetString(flagToken)
 
 			p := &summaraizer.OpenAi{
-				Common: summaraizer.Common{
-					Model:  aiModel,
-					Prompt: aiPrompt,
-				},
+				Model:    aiModel,
+				Prompt:   aiPrompt,
 				ApiToken: apiToken,
 			}
 

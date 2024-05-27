@@ -9,13 +9,14 @@ import (
 
 // OpenAi is a provider that uses OpenAI API as an AI provider.
 type OpenAi struct {
-	Common
-	ApiToken string
+	Model    string // The Ai model to use.
+	Prompt   string // The prompt to use for the AI model.
+	ApiToken string // The API Token for OpenAI.
 }
 
 func (o *OpenAi) Summarize(reader io.Reader) (string, error) {
 	return decodeAndSummarize(reader, func(comments Comments) (string, error) {
-		prompt, err := resolvePrompt(o.Common.Prompt, comments)
+		prompt, err := resolvePrompt(o.Prompt, comments)
 		if err != nil {
 			return "", err
 		}

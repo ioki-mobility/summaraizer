@@ -10,13 +10,14 @@ import (
 
 // Ollama is a provider that uses Ollama as an AI provider.
 type Ollama struct {
-	Common
-	Url string
+	Model  string // The Ai model to use.
+	Prompt string // The prompt to use for the AI model.
+	Url    string // The URL where Ollama is accessible.
 }
 
 func (o *Ollama) Summarize(reader io.Reader) (string, error) {
 	return decodeAndSummarize(reader, func(comments Comments) (string, error) {
-		prompt, err := resolvePrompt(o.Common.Prompt, comments)
+		prompt, err := resolvePrompt(o.Prompt, comments)
 		if err != nil {
 			return "", err
 		}
