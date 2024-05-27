@@ -7,8 +7,8 @@ import (
 	"text/template"
 )
 
-// AiProvider is an interface that defines an AI provider to summarize comments.
-type AiProvider interface {
+// Summarizer treats reader as a stream of [Comment] and returns their summary.
+type Summarizer interface {
 	Summarize(reader io.Reader) (string, error)
 }
 

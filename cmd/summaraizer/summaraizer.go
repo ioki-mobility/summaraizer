@@ -176,7 +176,7 @@ func fetch(s summaraizer.CommentSource) error {
 	return nil
 }
 
-func summarize(p summaraizer.AiProvider) error {
+func summarize(p summaraizer.Summarizer) error {
 	summarization, err := p.Summarize(os.Stdin)
 	if err != nil {
 		return err

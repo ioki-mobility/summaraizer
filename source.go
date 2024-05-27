@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// CommentSource is an interface that defines a source to fetch comments from.
+// CommentSource fetches comments from a source and writes them to a writer.
 type CommentSource interface {
 	Fetch(writer io.Writer) error
 }
