@@ -1,95 +1,80 @@
 # summaraizer
 
-Summarize GitHub issue (or pull request) comments.
+Summarizes comments from a variety of sources, such as GitHub issues, Reddit threads, and more 
+using AI models from different providers, such as Ollama, Mistral, and OpenAI, and more.
 
-## Requirements
+## Installation
 
-* Go installed (version `1.22.2`, `brew install go`)
-* Ollama installed (`brew install ollama`)
-* Any model installed via Ollama
-    * `ollama serve`
-    * `ollama pull mistral:7b`
+You can install the CLI by running the following command:
+```bash
+go install github.com/ioki-mobility/summaraizer/cmd/summaraizer@latest
+```
 
 ## Usage
 
+### CLI
+
+The minimum required Go version can be found in the [go.mod](go.mod) file.
+
+The code is split up into two parts.
+The `source` part and the `summaraization` part.
+First you need to fetch comments from a source, then you can summarize the comments.
+
+Obviously, you can also do both independently.
+
+#### Fetch comments
+
+The general usage is:
 ```bash
-go run cmd/summaraizer/summaraizer.go <aiProvider> <customAiProviderParams> --owner <owner> --repo <repo> --issue-number <issueNumber> [--token <token>]
+summaraizer [SOURCE] [ARGUMENTS] 
 ```
 
-You can also run `--help` to get the list of available `commands`, `arguments` and `flags`.
+Example sources are:
+* `github`
+* `gitlab`
+* `reddit`
 
-| Command                  | Description                                                                        |
-|--------------------------|------------------------------------------------------------------------------------| 
-| `aiProvider`             | One of `ollama`, `mistral`, `openai`. Defaults to `ollama`.                        |
-| `customAiProviderParams` | The custom parameters for the AI provider. Depending on the selected `aiProvider`. |
-| `--owner`                | The owner of the GitHub repository.                                                |
-| `--repo`                 | The GitHub repository name.                                                        |
-| `--issue-number`         | The GitHub issue number.                                                           |
-| `--token`                | (Optional) The GitHub API token. It is only required for private repos.            |
+#### Summarize comments
 
-### Common AIProvider Parameters
-
-There are some common parameters that can be used with all AI providers, namely, `--ai-model` and `--ai-prompt`.
-The following sections describe these parameters.
-
-#### AiModel
-
-The `--ai-model` parameter is used to specify the model to be used by the AI provider.
-You have to check the documentation of the AI provider to know which models are available.
-
-#### AiPrompt
-
-The `--ai-prompt` parameter is used to specify the prompt to be used by the AI provider.
-The prompt make use of Go's [`text/template` package](https://pkg.go.dev/text/template) to render the prompt.
-The prompt will receive a `struct` in form of `Comments`, with the following structure:
-```go
-type Comments []Comment
-
-type Comment struct {
-    Author string
-    Body   string
-}
-```
-You could, for example, inject the following prompt:
-```go
-var myAwesomeTemplate = `
-Please summarize the following discussions between different Authors.
-{{ range $comment := . }}
-Author {{ $comment.Author }} said: {{ $comment.Body }}
-{{ end }}
-`
+The general usage is:
+```bash
+summaraizer [PROVIDER] [ARGUMENTS]
 ```
 
-## Example
+Example providers are:
+* `ollama`
+* `openai`
+* `mistral`
 
-```bash 
-go run cmd/summaraizer/summaraizer.go ollama --url http://localhost:11434 --ai-model llama3 --owner golang --repo go --issue-number 66960
+Please note that the provider reads from `Stdin` as well as require a special JSON format as input:
+```json
+[
+    {
+        "author": "Author1",
+        "body": "Body1"
+    },
+    {
+        "author": "Author2",
+        "body": "Body2"
+    }
+]
 ```
 
-This will run the CLI with the `ollama` AI provider, pointing to a local `ollama` instance, 
-using the `llama3` model, for [`golang/go/issues/66960`](https://github.com/golang/go/issues/66960).
+#### Examples (summarize comments from a source)
 
-<details>
+Each provided sources already respects the JSON format required by the summarization providers.
+Being said, you can use of pipe to chain the commands together.
 
-<summary><b>The example above produced the following output:</b></summary>
+```bash
+summaraizer github --issue golang/go/66960 | summaraizer ollama --model llama3
+```
 
-Here is a summary of the discussion:
+This command fetches the comments of [this GitHub issue](https://github.com/golang/go/issues/66960)
+and summarizes them using the `llama3` model via Ollama.
 
-The proposal is for a new type `atomic.Chan` that allows for atomic access to a channel. 
-The motivation behind this proposal is to improve existing code that uses `atomic.Value` and `*hchan` to create lazy channels,
-which have 488 matches in GitHub search results.
+```bash
+summaraizer reddit --post 'r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/' | summaraizer openai --model gpt-4o --token SUPER_SECRE_API_TOKEN
+```
 
-The current implementation of lazy channels requires the use of `sync.Once`, 
-which has some drawbacks such as increasing the footprint and making on-demand channel swapping more complicated. 
-The proposed `atomic.Chan` type would enable no new code but improve existing code by providing a more efficient 
-and clear way to implement lazy channels.
-
-Some examples of where this proposal could be used include
-[pkg context](https://github.com/golang/go/blob/go1.22.2/src/context/context.go#L425), 
-[gRPC-Go](https://github.com/grpc/grpc-go/blob/v1.63.2/internal/transport/controlbuf.go#L311), and others.
-
-The discussion also touched on the idea that if this proposal is approved, 
-it could set a precedent for approving similar proposals for other Go types
-that are secretly just pointers to a special data structure or involve pointers, such as `string`, `slice`, and `map`.
-
-</details>
+This command fetches the comments of [this Reddit post](https://www.reddit.com/r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/)
+and summarizes them using the `gpt-4o` model via OpenAI.
