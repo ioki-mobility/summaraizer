@@ -3,149 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/ioki-mobility/summaraizer"
-	"github.com/ioki-mobility/summaraizer/provider"
-	"github.com/ioki-mobility/summaraizer/source"
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "summaraizer",
-	Short: "Summarizes GitHub issue comments",
-	Long:  `A tool to summarize GitHub issue (or pull request) comments using AI.`,
-}
-
-var ollamaCmd = &cobra.Command{
-	Use:   "ollama",
-	Short: "Summarizes using Ollama AI",
-	Long:  `Summarizes using Ollama AI.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		token, _ := cmd.Flags().GetString("token")
-		owner, _ := cmd.Flags().GetString("owner")
-		repo, _ := cmd.Flags().GetString("repo")
-		issueNumber, _ := cmd.Flags().GetString("issue-number")
-		gitHubInput := &source.GitHub{
-			Token:       token,
-			RepoOwner:   owner,
-			RepoName:    repo,
-			IssueNumber: issueNumber,
-		}
-
-		aiModel, _ := cmd.Flags().GetString("ai-model")
-		aiPrompt, _ := cmd.Flags().GetString("ai-prompt")
-		url, _ := cmd.Flags().GetString("url")
-		provider := &provider.Ollama{
-			Common: provider.Common{
-				Model:  aiModel,
-				Prompt: aiPrompt,
-			},
-			Url: url,
-		}
-
-		summarization, err := summaraizer.Summarize(gitHubInput, provider)
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-		fmt.Println(summarization)
-	},
-}
-
-var mistralCmd = &cobra.Command{
-	Use:   "mistral",
-	Short: "Summarizes using Mistral AI",
-	Long:  `Summarizes using Mistral AI.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		token, _ := cmd.Flags().GetString("token")
-		owner, _ := cmd.Flags().GetString("owner")
-		repo, _ := cmd.Flags().GetString("repo")
-		issueNumber, _ := cmd.Flags().GetString("issue-number")
-		gitHub := &source.GitHub{
-			Token:       token,
-			RepoOwner:   owner,
-			RepoName:    repo,
-			IssueNumber: issueNumber,
-		}
-
-		aiModel, _ := cmd.Flags().GetString("ai-model")
-		aiPrompt, _ := cmd.Flags().GetString("ai-prompt")
-		apiToken, _ := cmd.Flags().GetString("api-token")
-		provider := &provider.Mistral{
-			Common: provider.Common{
-				Model:  aiModel,
-				Prompt: aiPrompt,
-			},
-			ApiToken: apiToken,
-		}
-
-		summarization, err := summaraizer.Summarize(gitHub, provider)
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-		fmt.Println(summarization)
-	},
-}
-
-var openaiCmd = &cobra.Command{
-	Use:   "openai",
-	Short: "Summarizes using OpenAI AI",
-	Long:  `Summarizes using OpenAI AI.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		token, _ := cmd.Flags().GetString("token")
-		owner, _ := cmd.Flags().GetString("owner")
-		repo, _ := cmd.Flags().GetString("repo")
-		issueNumber, _ := cmd.Flags().GetString("issue-number")
-		gitHubInput := &source.GitHub{
-			Token:       token,
-			RepoOwner:   owner,
-			RepoName:    repo,
-			IssueNumber: issueNumber,
-		}
-
-		aiModel, _ := cmd.Flags().GetString("ai-model")
-		aiPrompt, _ := cmd.Flags().GetString("ai-prompt")
-		apiToken, _ := cmd.Flags().GetString("api-token")
-		provider := &provider.OpenAi{
-			Common: provider.Common{
-				Model:  aiModel,
-				Prompt: aiPrompt,
-			},
-			ApiToken: apiToken,
-		}
-
-		summarization, err := summaraizer.Summarize(gitHubInput, provider)
-		if err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
-		fmt.Println(summarization)
-	},
-}
-
 func main() {
-	rootCmd.PersistentFlags().String("token", "", "GitHub Token (can be empty for public repositories)")
-	rootCmd.PersistentFlags().String("owner", "", "GitHub Repository Owner")
-	rootCmd.PersistentFlags().String("repo", "", "GitHub Repository Name")
-	rootCmd.PersistentFlags().String("issue-number", "", "GitHub Issue Number")
-	rootCmd.MarkPersistentFlagRequired("owner")
-	rootCmd.MarkPersistentFlagRequired("repo")
-	rootCmd.MarkPersistentFlagRequired("issue-number")
-
-	createDefaultAiFlags(ollamaCmd, "mistral:7b", defaultPromptTemplate)
-	ollamaCmd.PersistentFlags().String("url", "http://localhost:11434", "The URl where ollama is accessible")
-	rootCmd.AddCommand(ollamaCmd)
-
-	createDefaultAiFlags(mistralCmd, "mistral:7b", defaultPromptTemplate)
-	mistralCmd.PersistentFlags().String("api-token", "", "The API Token for Mistral")
-	mistralCmd.MarkPersistentFlagRequired("api-token")
-	rootCmd.AddCommand(mistralCmd)
-
-	createDefaultAiFlags(openaiCmd, "gpt-3.5-turbo", defaultPromptTemplate)
-	openaiCmd.PersistentFlags().String("api-token", "", "The API Token for OpenAI")
-	openaiCmd.MarkPersistentFlagRequired("api-token")
-	rootCmd.AddCommand(openaiCmd)
+	rootCmd.AddCommand(githubCmd(), redditCmd())
+	rootCmd.AddCommand(ollamaCmd(), mistralCmd(), openaiCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -153,9 +19,143 @@ func main() {
 	}
 }
 
-func createDefaultAiFlags(cmd *cobra.Command, model string, prompt string) {
-	cmd.PersistentFlags().String("ai-model", model, "AI Model")
-	cmd.PersistentFlags().String("ai-prompt", prompt, "The prompt to use for the AI model")
+var rootCmd = &cobra.Command{
+	Use:   "summaraizer",
+	Short: "Summarizes comments",
+	Long:  "A tool to summarize comments from various sources using AI.",
+}
+
+func githubCmd() *cobra.Command {
+	flagIssue := "issue"
+	flagToken := "token"
+	var cmd = &cobra.Command{
+		Use:   "github",
+		Short: "Summarizes using GitHub as source",
+		Long:  "Summarizes using GitHub as source",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			issue, _ := cmd.Flags().GetString(flagIssue)
+			githubIssueParts := strings.Split(issue, "/")
+			token, _ := cmd.Flags().GetString(flagToken)
+
+			s := &summaraizer.GitHub{
+				Token:       token,
+				RepoOwner:   githubIssueParts[0],
+				RepoName:    githubIssueParts[1],
+				IssueNumber: githubIssueParts[2],
+			}
+			return fetch(s)
+		},
+	}
+	cmd.Flags().String(flagIssue, "", "The GitHub issue to summarize. Use the format owner/repo/issue_number.")
+	cmd.MarkFlagRequired(flagIssue)
+	cmd.Flags().String(flagToken, "", "The GitHub token. Only required for private repositories.")
+
+	return cmd
+}
+
+func redditCmd() *cobra.Command {
+	flagPost := "post"
+	cmd := &cobra.Command{
+		Use:   "reddit",
+		Short: "Summarizes using Reddit as source",
+		Long:  "Summarizes using Reddit as source.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			post, _ := cmd.Flags().GetString(flagPost)
+
+			s := &summaraizer.Reddit{
+				UrlPath: post,
+			}
+			return fetch(s)
+		},
+	}
+	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path. Everything after reddit.com.")
+	cmd.MarkFlagRequired(flagPost)
+	return cmd
+}
+
+const (
+	aiFlagModel  string = "model"
+	aiFlagPrompt string = "prompt"
+)
+
+func ollamaCmd() *cobra.Command {
+	flagUrl := "url"
+	var cmd = &cobra.Command{
+		Use:   "ollama",
+		Short: "Summarizes using Ollama AI",
+		Long:  "Summarizes using Ollama AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			url, _ := cmd.Flags().GetString(flagUrl)
+
+			p := &summaraizer.Ollama{
+				Model:  aiModel,
+				Prompt: aiPrompt,
+				Url:    url,
+			}
+
+			return summarize(p)
+		},
+	}
+	cmd.Flags().String(aiFlagModel, "gemma:2b", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagUrl, "http://localhost:11434", "The URl where ollama is accessible")
+	return cmd
+}
+
+func mistralCmd() *cobra.Command {
+	flagToken := "token"
+	var cmd = &cobra.Command{
+		Use:   "mistral",
+		Short: "Summarizes using Mistral AI",
+		Long:  "Summarizes using Mistral AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &summaraizer.Mistral{
+				Model:    aiModel,
+				Prompt:   aiPrompt,
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
+		},
+	}
+	cmd.Flags().String(aiFlagModel, "mistral:7b", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagToken, "", "The API Token for Mistral")
+	cmd.MarkFlagRequired(flagToken)
+	return cmd
+}
+
+func openaiCmd() *cobra.Command {
+	flagToken := "token"
+	cmd := &cobra.Command{
+		Use:   "openai",
+		Short: "Summarizes using OpenAI AI",
+		Long:  "Summarizes using OpenAI AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &summaraizer.OpenAi{
+				Model:    aiModel,
+				Prompt:   aiPrompt,
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
+		},
+	}
+	cmd.Flags().String(aiFlagModel, "gpt-3.5-turbo", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagToken, "", "The API Token for OpenAI")
+	cmd.MarkFlagRequired(flagToken)
+	return cmd
 }
 
 var defaultPromptTemplate = `
@@ -167,3 +167,20 @@ Here is the discussion:
 <comment>{{ $comment.Body }}</comment>
 {{end}}
 `
+
+func fetch(s summaraizer.CommentSource) error {
+	err := s.Fetch(os.Stdout)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func summarize(p summaraizer.Summarizer) error {
+	summarization, err := p.Summarize(os.Stdin)
+	if err != nil {
+		return err
+	}
+	fmt.Println(summarization)
+	return nil
+}

@@ -1,12 +1,10 @@
-package source
+package summaraizer
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/ioki-mobility/summaraizer"
 )
 
 // GitHub is a source that fetches comments from a GitHub issue or pull request.
@@ -17,35 +15,38 @@ type GitHub struct {
 	IssueNumber string
 }
 
-func (gh *GitHub) Fetch() (summaraizer.Comments, error) {
-	var comments summaraizer.Comments
+// Fetch fetches comments from a GitHub issue.
+func (gh *GitHub) Fetch(writer io.Writer) error {
+	return fetchAndEncode(writer, func() (Comments, error) {
+		var comments Comments
 
-	issue := issue{
-		repo: repo{
-			Owner: gh.RepoOwner,
-			Name:  gh.RepoName,
-		},
-		Number: gh.IssueNumber,
-	}
-
-	issueResponse := fetchIssue(gh.Token, issue)
-
-	comments = append(comments, summaraizer.Comment{
-		Author: issueResponse.User.Login,
-		Body:   issueResponse.Body,
-	})
-
-	if issueResponse.Comments > 0 {
-		issueComments := fetchIssueComments(gh.Token, issue)
-		for _, issueComments := range *issueComments {
-			comments = append(comments, summaraizer.Comment{
-				Author: issueComments.User.Login,
-				Body:   issueComments.Body,
-			})
+		issue := issue{
+			repo: repo{
+				Owner: gh.RepoOwner,
+				Name:  gh.RepoName,
+			},
+			Number: gh.IssueNumber,
 		}
-	}
 
-	return comments, nil
+		issueResponse := fetchIssue(gh.Token, issue)
+
+		comments = append(comments, Comment{
+			Author: issueResponse.User.Login,
+			Body:   issueResponse.Body,
+		})
+
+		if issueResponse.Comments > 0 {
+			issueComments := fetchIssueComments(gh.Token, issue)
+			for _, issueComments := range *issueComments {
+				comments = append(comments, Comment{
+					Author: issueComments.User.Login,
+					Body:   issueComments.Body,
+				})
+			}
+		}
+
+		return comments, nil
+	})
 }
 
 func fetchIssue(token string, issue issue) *issueResponse {
