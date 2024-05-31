@@ -73,7 +73,7 @@ This command fetches the comments of [this GitHub issue](https://github.com/gola
 and summarizes them using the `llama3` model via Ollama.
 
 ```bash
-summaraizer reddit --post 'r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/' | summaraizer openai --model gpt-4o --token SUPER_SECRE_API_TOKEN
+summaraizer reddit --post '/r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/' | summaraizer openai --model gpt-4o --token SUPER_SECRE_API_TOKEN
 ```
 
 This command fetches the comments of [this Reddit post](https://www.reddit.com/r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/)
