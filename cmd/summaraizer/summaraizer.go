@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	rootCmd.AddCommand(githubCmd(), redditCmd())
+	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd())
 	rootCmd.AddCommand(ollamaCmd(), mistralCmd(), openaiCmd())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -70,6 +70,39 @@ func redditCmd() *cobra.Command {
 	}
 	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path. Everything after reddit.com.")
 	cmd.MarkFlagRequired(flagPost)
+	return cmd
+}
+
+func gitlabCmd() *cobra.Command {
+	flagIssue := "issue"
+	flagToken := "token"
+	flagUrl := "url"
+	var cmd = &cobra.Command{
+		Use:   "gitlab",
+		Short: "Summarizes using GitLab as source",
+		Long:  "Summarizes using GitLab as source",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			issue, _ := cmd.Flags().GetString(flagIssue)
+			githubIssueParts := strings.Split(issue, "/")
+			token, _ := cmd.Flags().GetString(flagToken)
+			url, _ := cmd.Flags().GetString(flagUrl)
+
+			s := &summaraizer.GitLab{
+				Token:       token,
+				RepoOwner:   githubIssueParts[0],
+				RepoName:    githubIssueParts[1],
+				IssueNumber: githubIssueParts[2],
+				Url:         url,
+			}
+			return fetch(s)
+		},
+	}
+	cmd.Flags().String(flagIssue, "", "The GitLab issue to summarize. Use the format owner/repo/issue_number.")
+	cmd.MarkFlagRequired(flagIssue)
+	cmd.Flags().String(flagToken, "", "The GitLab token.")
+	cmd.MarkFlagRequired(flagToken)
+	cmd.Flags().String(flagUrl, "https://gitlab.com", "The URL of the GitLab instance.")
+
 	return cmd
 }
 
