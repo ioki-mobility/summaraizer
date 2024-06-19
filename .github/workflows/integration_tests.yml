@@ -30,13 +30,14 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
+      - name: Install ollama
+        run: curl -fsSL https://ollama.com/install.sh | sh
+
       - name: Setup ollama
         run: |
-          curl -fsSL https://ollama.com/install.sh | sh
-          OLLAMA_HOST=127.0.0.1:11435 ollama serve &
+          ollama serve &
           ollama pull phi3:mini
 
       - name: Can summarize text
         run: |
-          echo '[{ "Author" : "StefMa", "Body" : "The World is a nice place" }, { "Author" : "fabrik42", "Body" : "Yes, indeed!" }]' | go run cmd/summaraizer/summaraizer.go ollama --model phi3:mini --url 'http://localhost:11435'
-
+          echo '[{ "Author" : "StefMa", "Body" : "The World is a nice place" }, { "Author" : "fabrik42", "Body" : "Yes, indeed!" }]' | go run cmd/summaraizer/summaraizer.go ollama --model phi3:mini
