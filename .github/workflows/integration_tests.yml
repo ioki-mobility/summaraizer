@@ -1,0 +1,45 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  fetchVariousSources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Fetch github issue
+        run: go run cmd/summaraizer/summaraizer.go github --issue ioki-mobility/summaraizer/11
+
+      - name: Fetch reddit post
+        run: go run cmd/summaraizer/summaraizer.go reddit --post '/r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/'
+
+  summarizeOllama:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Setup ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          ollama pull phi3:mini
+
+      - name: Can fetch a github issue
+        run: |
+          echo '[{ "Author" : "StefMa", "Body" : "The World is a nice place" }, { "Author" : "fabrik42", "Body" : "Yes, indeed!" }]' | go run cmd/summaraizer/summaraizer.go ollama --model phi3:mini
+
