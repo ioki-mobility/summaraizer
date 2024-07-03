@@ -122,7 +122,7 @@ func slackCmd() *cobra.Command {
 			s := &summaraizer.Slack{
 				Token:   token,
 				Channel: channel,
-				Thread:  ts,
+				TS:      ts,
 			}
 			return fetch(s)
 		},

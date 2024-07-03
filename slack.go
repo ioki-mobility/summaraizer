@@ -10,13 +10,13 @@ import (
 type Slack struct {
 	Token   string // The OAuth token.
 	Channel string // The channel ID.
-	Thread  string // The thread ID.
+	TS      string // The timestamp of the thread.
 }
 
 // Fetch fetches comments from a Slack thread.
 func (s *Slack) Fetch(writer io.Writer) error {
 	return fetchAndEncode(writer, func() (Comments, error) {
-		url := "https://slack.com/api/conversations.replies?channel=" + s.Channel + "&ts=" + s.Thread
+		url := "https://slack.com/api/conversations.replies?channel=" + s.Channel + "&ts=" + s.TS
 		request, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			return nil, err
