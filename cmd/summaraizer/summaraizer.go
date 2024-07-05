@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd())
+	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd(), slackCmd())
 	rootCmd.AddCommand(ollamaCmd(), mistralCmd(), openaiCmd())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -102,6 +102,37 @@ func gitlabCmd() *cobra.Command {
 	cmd.Flags().String(flagToken, "", "The GitLab token.")
 	cmd.MarkFlagRequired(flagToken)
 	cmd.Flags().String(flagUrl, "https://gitlab.com", "The URL of the GitLab instance.")
+
+	return cmd
+}
+
+func slackCmd() *cobra.Command {
+	flagToken := "token"
+	flagChannel := "channel"
+	flagTs := "ts"
+	var cmd = &cobra.Command{
+		Use:   "slack",
+		Short: "Summarizes using Slack as source",
+		Long:  "Summarizes using Slack as source",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, _ := cmd.Flags().GetString(flagToken)
+			channel, _ := cmd.Flags().GetString(flagChannel)
+			ts, _ := cmd.Flags().GetString(flagTs)
+
+			s := &summaraizer.Slack{
+				Token:   token,
+				Channel: channel,
+				TS:      ts,
+			}
+			return fetch(s)
+		},
+	}
+	cmd.Flags().String(flagToken, "", "The Slack token.")
+	cmd.MarkFlagRequired(flagToken)
+	cmd.Flags().String(flagChannel, "", "The channel ID of the Slack thread.")
+	cmd.MarkFlagRequired(flagChannel)
+	cmd.Flags().String(flagTs, "", "The timestamp of the Slack thread.")
+	cmd.MarkFlagRequired(flagTs)
 
 	return cmd
 }
