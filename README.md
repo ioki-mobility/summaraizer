@@ -12,17 +12,19 @@ go install github.com/ioki-mobility/summaraizer/cmd/summaraizer@latest
 
 ## Usage
 
+The usage of the CLI can be found at the [project website](https://ioki-mobility.github.io/summaraizer/).
+
 ### CLI
 
 The minimum required Go version can be found in the [go.mod](go.mod) file.
 
 The code is split up into two parts.
-The `source` part and the `summaraization` part.
+The `source` part and the `summarization` part.
 First you need to fetch comments from a source, then you can summarize the comments.
 
-Obviously, you can also do both independently.
+Of course, you can also do both independently.
 
-#### Fetch comments
+#### Source aka. fetching comments
 
 The general usage is:
 ```bash
@@ -32,9 +34,10 @@ summaraizer [SOURCE] [ARGUMENTS]
 Example sources are:
 * `github`
 * `gitlab`
+* `slack`
 * `reddit`
 
-#### Summarize comments
+#### Summarization aka. calling providers
 
 The general usage is:
 ```bash
@@ -62,8 +65,8 @@ Please note that the provider reads from `Stdin` as well as require a special JS
 
 #### Examples (summarize comments from a source)
 
-Each provided sources already respects the JSON format required by the summarization providers.
-Being said, you can use of pipe to chain the commands together.
+Each provided source already respects the JSON format required by the summarization providers.
+Therefore, you can use piping to chain the commands together.
 
 ```bash
 summaraizer github --issue golang/go/66960 | summaraizer ollama --model llama3

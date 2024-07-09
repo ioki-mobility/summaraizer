@@ -1,0 +1,6 @@
+baseURL = 'http://ioki-mobility.github.io/summaraizer'
+languageCode = 'en-us'
+title = 'summaraizer'
+[module]
+[[module.imports]]
+path = 'github.com/alex-shpak/hugo-book'
