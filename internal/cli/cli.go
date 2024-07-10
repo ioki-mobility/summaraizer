@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 
 func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd(), slackCmd())
-	rootCmd.AddCommand(ollamaCmd(), openaiCmd())
+	rootCmd.AddCommand(ollamaCmd(), openaiCmd(), anthropicCmd())
 	return rootCmd
 }
 
@@ -187,6 +187,33 @@ func openaiCmd() *cobra.Command {
 	cmd.Flags().String(aiFlagModel, "gpt-3.5-turbo", "The AI model to use")
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
 	cmd.Flags().String(flagToken, "", "The API Token for OpenAI")
+	cmd.MarkFlagRequired(flagToken)
+	return cmd
+}
+
+func anthropicCmd() *cobra.Command {
+	flagToken := "token"
+	cmd := &cobra.Command{
+		Use:   "anthropic",
+		Short: "Summarizes using Anthropic AI",
+		Long:  "Summarizes using Anthropic AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &summaraizer.Anthropic{
+				Model:    aiModel,
+				Prompt:   aiPrompt,
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
+		},
+	}
+	cmd.Flags().String(aiFlagModel, "claude-3-haiku-20240307", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagToken, "", "The API Token for Anthropic")
 	cmd.MarkFlagRequired(flagToken)
 	return cmd
 }
