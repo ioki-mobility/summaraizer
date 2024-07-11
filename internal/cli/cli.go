@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 
 func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd(), slackCmd())
-	rootCmd.AddCommand(ollamaCmd(), mistralCmd(), openaiCmd())
+	rootCmd.AddCommand(ollamaCmd(), openaiCmd())
 	return rootCmd
 }
 
@@ -161,33 +161,6 @@ func ollamaCmd() *cobra.Command {
 	cmd.Flags().String(aiFlagModel, "gemma:2b", "The AI model to use")
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
 	cmd.Flags().String(flagUrl, "http://localhost:11434", "The URl where ollama is accessible")
-	return cmd
-}
-
-func mistralCmd() *cobra.Command {
-	flagToken := "token"
-	var cmd = &cobra.Command{
-		Use:   "mistral",
-		Short: "Summarizes using Mistral AI",
-		Long:  "Summarizes using Mistral AI.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
-			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
-			apiToken, _ := cmd.Flags().GetString(flagToken)
-
-			p := &summaraizer.Mistral{
-				Model:    aiModel,
-				Prompt:   aiPrompt,
-				ApiToken: apiToken,
-			}
-
-			return summarize(p)
-		},
-	}
-	cmd.Flags().String(aiFlagModel, "mistral:7b", "The AI model to use")
-	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
-	cmd.Flags().String(flagToken, "", "The API Token for Mistral")
-	cmd.MarkFlagRequired(flagToken)
 	return cmd
 }
 
