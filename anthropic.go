@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-// Anthropic is a provider that uses Ollama as an AI provider.
+// Anthropic is a provider that uses Anthropic as an AI provider.
 type Anthropic struct {
 	Model    string // The Ai model to use.
 	Prompt   string // The prompt to use for the AI model.
-	ApiToken string // // The API Token for Anthropic.
+	ApiToken string // The API Token for Anthropic.
 }
 
 func (a *Anthropic) Summarize(reader io.Reader) (string, error) {
