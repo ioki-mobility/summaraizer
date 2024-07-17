@@ -1,7 +1,7 @@
 # summaraizer
 
 Summarizes comments from a variety of sources, such as GitHub issues, Slack threads, Reddit threads, and more 
-using AI models from different providers, such as Ollama and OpenAI.
+using AI models from different providers, such as Ollama, Anthropic and OpenAI.
 
 ## Installation
 
@@ -46,6 +46,7 @@ summaraizer [PROVIDER] [ARGUMENTS]
 
 Example providers are:
 * `ollama`
+* `anthropic`
 * `openai`
 
 Please note that the provider reads from `Stdin` as well as require a special JSON format as input:

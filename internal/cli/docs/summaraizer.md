@@ -14,6 +14,7 @@ A tool to summarize comments from various sources using AI.
 
 ### SEE ALSO
 
+* [summaraizer anthropic](summaraizer_anthropic.md)	 - Summarizes using Anthropic AI
 * [summaraizer github](summaraizer_github.md)	 - Summarizes using GitHub as source
 * [summaraizer gitlab](summaraizer_gitlab.md)	 - Summarizes using GitLab as source
 * [summaraizer ollama](summaraizer_ollama.md)	 - Summarizes using Ollama AI
