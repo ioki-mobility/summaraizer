@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version of the release'
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/integration_tests.yml
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build for MacOS
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o summaraizer-macos-amd64 cmd/summaraizer/summaraizer.go
+          GOOS=darwin GOARCH=arm64 go build -o summaraizer-macos-arm64 cmd/summaraizer/summaraizer.go
+
+      - name: Build for Linux
+        run: GOOS=linux GOARCH=amd64 go build -o summaraizer-linux-amd64 cmd/summaraizer/summaraizer.go
+
+      - name: Build for Windows
+        run: GOOS=windows GOARCH=amd64 go build -o summaraizer-windows-amd64 cmd/summaraizer/summaraizer.go
+
+      - name: Create tag
+        run: git tag -a -m ${{ github.event.inputs.version }} ${{ github.event.inputs.version }}
+
+      - name: Push tag
+        run: git push origin ${{ github.event.inputs.version }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            summaraizer
+            summaraizer-macos-amd64
+            summaraizer-macos-arm64
+            summaraizer-linux-amd64
+            summaraizer-windows-amd64
+          fail_on_unmatched_files: true
+          name: ${{ github.event.inputs.version }}
+          tag_name: ${{ github.event.inputs.version }}
+          generate_release_notes: true
+          draft: true
+          prerelease: true
