@@ -48,7 +48,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            summaraizer
             summaraizer-macos-amd64
             summaraizer-macos-arm64
             summaraizer-linux-amd64
