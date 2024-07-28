@@ -33,6 +33,11 @@ jobs:
       - name: Build for Windows
         run: GOOS=windows GOARCH=amd64 go build -o summaraizer-windows-amd64 cmd/summaraizer/summaraizer.go
 
+      - name: Setup git 
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "GitHub Actions [Bot]"
+
       - name: Create tag
         run: git tag -a -m ${{ github.event.inputs.version }} ${{ github.event.inputs.version }}
 
