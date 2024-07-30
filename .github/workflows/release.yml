@@ -8,21 +8,23 @@ on:
         required: true
 
 jobs:
+  tests:
+    uses: ./.github/workflows/integration_tests.yml
   release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    needs: [tests]
     steps:
       - name: Validate version
         run: |
-          if [[ ! "${{ github.event.inputs.version }}" =~ ^v(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$ ]]; then
-            echo "Invalid version format. Please use a valid semver version."
+          SEMVER_REGEX_WITH_LEADING_V="^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(\\-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+          if [[ ! "${{ github.event.inputs.version }}" =~ $SEMVER_REGEX_WITH_LEADING_V ]]; then
+            echo "Invalid version format. Please use a valid semver version, prefixed with 'v'."
             exit 1
           fi
 
       - uses: actions/checkout@v4
-
-      - uses: ./.github/actions/integration_tests.yml
 
       - name: Setup Go
         uses: actions/setup-go@v5
