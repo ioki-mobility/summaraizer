@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 
 func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd(), slackCmd())
-	rootCmd.AddCommand(ollamaCmd(), openaiCmd(), anthropicCmd())
+	rootCmd.AddCommand(ollamaCmd(), openaiCmd(), anthropicCmd(), googleCmd())
 	return rootCmd
 }
 
@@ -214,6 +214,33 @@ func anthropicCmd() *cobra.Command {
 	cmd.Flags().String(aiFlagModel, "claude-3-haiku-20240307", "The AI model to use")
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
 	cmd.Flags().String(flagToken, "", "The API Token for Anthropic")
+	cmd.MarkFlagRequired(flagToken)
+	return cmd
+}
+
+func googleCmd() *cobra.Command {
+	flagToken := "token"
+	cmd := &cobra.Command{
+		Use:   "google",
+		Short: "Summarizes using Google AI",
+		Long:  "Summarizes using Google AI.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &summaraizer.Google{
+				Model:    aiModel,
+				Prompt:   aiPrompt,
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
+		},
+	}
+	cmd.Flags().String(aiFlagModel, "gemini-1.5-flash-8b", "The AI model to use")
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	cmd.Flags().String(flagToken, "", "The API Token for Google")
 	cmd.MarkFlagRequired(flagToken)
 	return cmd
 }
