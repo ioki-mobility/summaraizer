@@ -1,13 +1,21 @@
 ## summaraizer google
 
-Summarizes using Google AI
+Summarizes using Google
 
 ### Synopsis
 
-Summarizes using Google AI.
+To summarize using Google, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.
 
 ```
 summaraizer google [flags]
+```
+
+### Examples
+
+```
+summaraizer google --token <token>
+summaraizer google --token <token> --model gemini-1.5-pro-002
 ```
 
 ### Options

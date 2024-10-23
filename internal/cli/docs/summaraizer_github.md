@@ -1,13 +1,22 @@
 ## summaraizer github
 
-Summarizes using GitHub as source
+Fetches comments from GitHub
 
 ### Synopsis
 
-Summarizes using GitHub as source
+To summarize a GitHub issue, use the format owner/repo/issue_number.
+At GitHub terminology, a pull request is also an issue. Therefore, you can summarize a pull request using the same format.
+If the repository is private, you need to provide a token.
 
 ```
 summaraizer github [flags]
+```
+
+### Examples
+
+```
+summaraizer github --issue ioki-mobility/summaraizer/1
+summaraizer github --issue ioki-mobility/summaraizer/1 --token <token>
 ```
 
 ### Options

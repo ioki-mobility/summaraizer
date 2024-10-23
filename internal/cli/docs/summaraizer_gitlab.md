@@ -1,13 +1,23 @@
 ## summaraizer gitlab
 
-Summarizes using GitLab as source
+Fetches comments from GitLab issues
 
 ### Synopsis
 
-Summarizes using GitLab as source
+To summarize a GitLab issue, use the format owner/repo/issue_number. 
+You always have to provide a token.
+If you have a custom GitLab instance, you can provide the URL with the --url flag.
+Note that we only fetch the top-level comments. Nested comments are ignored.
 
 ```
 summaraizer gitlab [flags]
+```
+
+### Examples
+
+```
+summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token>
+summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token> --url https://gitlab.url.com
 ```
 
 ### Options

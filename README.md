@@ -27,7 +27,7 @@ summaraizer github --issue golang/go/66960 | summaraizer ollama --model llama3
     <summary>Fetch from Reddit post and summarize using OpenAI with gpt-4o</summary>
 
 ```bash
-summaraizer reddit --post '/r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/' | summaraizer openai --model gpt-4o --token SUPER_SECRET_API_TOKEN
+summaraizer reddit --post 'r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/' | summaraizer openai --model gpt-4o --token SUPER_SECRET_API_TOKEN
 ```
 
 </details>

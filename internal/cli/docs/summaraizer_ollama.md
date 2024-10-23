@@ -1,13 +1,22 @@
 ## summaraizer ollama
 
-Summarizes using Ollama AI
+Summarizes using Ollama
 
 ### Synopsis
 
-Summarizes using Ollama AI.
+To summarize using Ollama, you *can* provide the URL where Ollama is accessible.
+If you are running Ollama locally, you can use the default URL. There is no need to provide the URL.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.
 
 ```
 summaraizer ollama [flags]
+```
+
+### Examples
+
+```
+summaraizer ollama
+summaraizer ollama --model llama3.2:3b
 ```
 
 ### Options
