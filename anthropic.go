@@ -45,6 +45,7 @@ func (a *Anthropic) Summarize(reader io.Reader) (string, error) {
 			return "", err
 		}
 		req.Header.Set("x-api-key", a.ApiToken)
+		req.Header.Set("anthropic-version", "2023-06-01")
 		req.Header.Set("Content-Type", "application/json")
 
 		client := &http.Client{}
