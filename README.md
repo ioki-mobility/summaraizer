@@ -1,3 +1,6 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/ioki-mobility/summaraizer.svg)](https://pkg.go.dev/github.com/ioki-mobility/summaraizer)
+[![Integration Tests](https://github.com/ioki-mobility/summaraizer/actions/workflows/integration_tests.yml/badge.svg)](https://github.com/ioki-mobility/summaraizer/actions/workflows/integration_tests.yml)
+
 # summaraizer
 
 Summarizes comments from a variety of sources, such as GitHub issues, Slack threads, Reddit threads, and more 
