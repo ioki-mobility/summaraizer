@@ -9,13 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "summaraizer",
-	Short: "Summarizes comments",
-	Long:  "A tool to summarize comments from various sources using AI.",
-}
-
 func NewRootCmd() *cobra.Command {
+	var rootCmd = &cobra.Command{
+		Use:   "summaraizer",
+		Short: "Summarizes comments",
+		Long:  "Summarizes comments from a variety of sources using AI models from different providers.",
+	}
 	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd(), slackCmd())
 	rootCmd.AddCommand(ollamaCmd(), openaiCmd(), anthropicCmd(), googleCmd())
 	return rootCmd
@@ -26,8 +25,12 @@ func githubCmd() *cobra.Command {
 	flagToken := "token"
 	var cmd = &cobra.Command{
 		Use:   "github",
-		Short: "Summarizes using GitHub as source",
-		Long:  "Summarizes using GitHub as source",
+		Short: "Fetches comments from GitHub",
+		Long: `To summarize a GitHub issue, use the format owner/repo/issue_number.
+At GitHub terminology, a pull request is also an issue. Therefore, you can summarize a pull request using the same format.
+If the repository is private, you need to provide a token.`,
+		Example: `summaraizer github --issue ioki-mobility/summaraizer/1
+summaraizer github --issue ioki-mobility/summaraizer/1 --token <token>`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issue, _ := cmd.Flags().GetString(flagIssue)
 			githubIssueParts := strings.Split(issue, "/")
@@ -53,8 +56,10 @@ func redditCmd() *cobra.Command {
 	flagPost := "post"
 	cmd := &cobra.Command{
 		Use:   "reddit",
-		Short: "Summarizes using Reddit as source",
-		Long:  "Summarizes using Reddit as source.",
+		Short: "Fetches comments from a Reddit post",
+		Long: `To summarize a Reddit post, use the URL path. Everything after reddit.com without the leading slash.
+Note that we only fetch the top-level comments. Nested comments are ignored.`,
+		Example: "summaraizer reddit --post r/ArtificialInteligence/comments/1d16cxl/miss_ai_worlds_first_beauty_contest_with_computer/",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			post, _ := cmd.Flags().GetString(flagPost)
 
@@ -64,7 +69,7 @@ func redditCmd() *cobra.Command {
 			return fetch(s)
 		},
 	}
-	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path. Everything after reddit.com.")
+	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path.")
 	cmd.MarkFlagRequired(flagPost)
 	return cmd
 }
@@ -75,8 +80,13 @@ func gitlabCmd() *cobra.Command {
 	flagUrl := "url"
 	var cmd = &cobra.Command{
 		Use:   "gitlab",
-		Short: "Summarizes using GitLab as source",
-		Long:  "Summarizes using GitLab as source",
+		Short: "Fetches comments from GitLab issues",
+		Long: `To summarize a GitLab issue, use the format owner/repo/issue_number. 
+You always have to provide a token.
+If you have a custom GitLab instance, you can provide the URL with the --url flag.
+Note that we only fetch the top-level comments. Nested comments are ignored.`,
+		Example: `summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token>
+summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token> --url https://gitlab.url.com`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			issue, _ := cmd.Flags().GetString(flagIssue)
 			githubIssueParts := strings.Split(issue, "/")
@@ -108,8 +118,10 @@ func slackCmd() *cobra.Command {
 	flagTs := "ts"
 	var cmd = &cobra.Command{
 		Use:   "slack",
-		Short: "Summarizes using Slack as source",
-		Long:  "Summarizes using Slack as source",
+		Short: "Fetches comments from a Slack thread",
+		Long: `To summarize a Slack thread, you need to provide the token, the channel ID, and the timestamp of the thread.
+You can get the channel ID and the timestamp from the URL of the thread.`,
+		Example: "summaraizer slack --token <token> --channel <channel_id> --ts <timestamp>",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, _ := cmd.Flags().GetString(flagToken)
 			channel, _ := cmd.Flags().GetString(flagChannel)
@@ -142,8 +154,12 @@ func ollamaCmd() *cobra.Command {
 	flagUrl := "url"
 	var cmd = &cobra.Command{
 		Use:   "ollama",
-		Short: "Summarizes using Ollama AI",
-		Long:  "Summarizes using Ollama AI.",
+		Short: "Summarizes using Ollama",
+		Long: `To summarize using Ollama, you *can* provide the URL where Ollama is accessible.
+If you are running Ollama locally, you can use the default URL. There is no need to provide the URL.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.`,
+		Example: `summaraizer ollama
+summaraizer ollama --model llama3.2:3b`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
@@ -168,8 +184,11 @@ func openaiCmd() *cobra.Command {
 	flagToken := "token"
 	cmd := &cobra.Command{
 		Use:   "openai",
-		Short: "Summarizes using OpenAI AI",
-		Long:  "Summarizes using OpenAI AI.",
+		Short: "Summarizes using OpenAI",
+		Long: `So summarize using OpenAI, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.`,
+		Example: `summaraizer openai --token <token>
+summaraizer openai --token <token> --model gpt4o-mini`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
@@ -195,8 +214,11 @@ func anthropicCmd() *cobra.Command {
 	flagToken := "token"
 	cmd := &cobra.Command{
 		Use:   "anthropic",
-		Short: "Summarizes using Anthropic AI",
-		Long:  "Summarizes using Anthropic AI.",
+		Short: "Summarizes using Anthropic",
+		Long: `To summarize using Anthropic, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.`,
+		Example: `summaraizer anthropic --token <token>
+summaraizer anthropic --token <token> --model claude-3-5-sonnet-20241022`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
@@ -222,8 +244,11 @@ func googleCmd() *cobra.Command {
 	flagToken := "token"
 	cmd := &cobra.Command{
 		Use:   "google",
-		Short: "Summarizes using Google AI",
-		Long:  "Summarizes using Google AI.",
+		Short: "Summarizes using Google",
+		Long: `To summarize using Google, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.`,
+		Example: `summaraizer google --token <token>
+summaraizer google --token <token> --model gemini-1.5-pro-002`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
 			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)

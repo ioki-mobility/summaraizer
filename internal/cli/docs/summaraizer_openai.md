@@ -1,13 +1,21 @@
 ## summaraizer openai
 
-Summarizes using OpenAI AI
+Summarizes using OpenAI
 
 ### Synopsis
 
-Summarizes using OpenAI AI.
+So summarize using OpenAI, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.
 
 ```
 summaraizer openai [flags]
+```
+
+### Examples
+
+```
+summaraizer openai --token <token>
+summaraizer openai --token <token> --model gpt4o-mini
 ```
 
 ### Options

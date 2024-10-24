@@ -1,13 +1,20 @@
 ## summaraizer slack
 
-Summarizes using Slack as source
+Fetches comments from a Slack thread
 
 ### Synopsis
 
-Summarizes using Slack as source
+To summarize a Slack thread, you need to provide the token, the channel ID, and the timestamp of the thread.
+You can get the channel ID and the timestamp from the URL of the thread.
 
 ```
 summaraizer slack [flags]
+```
+
+### Examples
+
+```
+summaraizer slack --token <token> --channel <channel_id> --ts <timestamp>
 ```
 
 ### Options

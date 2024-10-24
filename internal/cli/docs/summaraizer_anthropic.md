@@ -1,13 +1,21 @@
 ## summaraizer anthropic
 
-Summarizes using Anthropic AI
+Summarizes using Anthropic
 
 ### Synopsis
 
-Summarizes using Anthropic AI.
+To summarize using Anthropic, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.
 
 ```
 summaraizer anthropic [flags]
+```
+
+### Examples
+
+```
+summaraizer anthropic --token <token>
+summaraizer anthropic --token <token> --model claude-3-5-sonnet-20241022
 ```
 
 ### Options

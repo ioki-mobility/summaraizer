@@ -4,7 +4,7 @@ Summarizes comments
 
 ### Synopsis
 
-A tool to summarize comments from various sources using AI.
+Summarizes comments from a variety of sources using AI models from different providers.
 
 ### Options
 
@@ -14,12 +14,12 @@ A tool to summarize comments from various sources using AI.
 
 ### SEE ALSO
 
-* [summaraizer anthropic](summaraizer_anthropic.md)	 - Summarizes using Anthropic AI
-* [summaraizer github](summaraizer_github.md)	 - Summarizes using GitHub as source
-* [summaraizer gitlab](summaraizer_gitlab.md)	 - Summarizes using GitLab as source
-* [summaraizer google](summaraizer_google.md)	 - Summarizes using Google AI
-* [summaraizer ollama](summaraizer_ollama.md)	 - Summarizes using Ollama AI
-* [summaraizer openai](summaraizer_openai.md)	 - Summarizes using OpenAI AI
-* [summaraizer reddit](summaraizer_reddit.md)	 - Summarizes using Reddit as source
-* [summaraizer slack](summaraizer_slack.md)	 - Summarizes using Slack as source
+* [summaraizer anthropic](summaraizer_anthropic.md)	 - Summarizes using Anthropic
+* [summaraizer github](summaraizer_github.md)	 - Fetches comments from GitHub
+* [summaraizer gitlab](summaraizer_gitlab.md)	 - Fetches comments from GitLab issues
+* [summaraizer google](summaraizer_google.md)	 - Summarizes using Google
+* [summaraizer ollama](summaraizer_ollama.md)	 - Summarizes using Ollama
+* [summaraizer openai](summaraizer_openai.md)	 - Summarizes using OpenAI
+* [summaraizer reddit](summaraizer_reddit.md)	 - Fetches comments from a Reddit post
+* [summaraizer slack](summaraizer_slack.md)	 - Fetches comments from a Slack thread
 
