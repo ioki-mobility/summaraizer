@@ -23,7 +23,7 @@ Of course, you can also do both independently.
 
 The general usage is:
 ```bash
-summaraizer [SOURCE] [ARGUMENTS] 
+summaraizer [SOURCE] [flags] 
 ```
 
 Example sources are:
@@ -50,7 +50,7 @@ The source writes to `Stdout` and writes the output in a JSON format:
 
 The general usage is:
 ```bash
-summaraizer [PROVIDER] [ARGUMENTS]
+summaraizer [PROVIDER] [FLAGS]
 ```
 
 Example providers are:
@@ -73,9 +73,76 @@ The provider reads from `Stdin` and requires a special JSON format as input:
 ]
 ```
 
-#### Tips and tricks
+### Configuration and flags
 
-**Custom source**
+Each source and provider has a unique set of flags. 
+Some flags are required, while others are optional. 
+If you do not provide the required flags, you will be prompted to enter them.
+
+Alternatively, you can specify all flags (both required and optional) 
+in a configuration file named config.yml. 
+The JSON format uses the same key names as the flag names,
+and each provider or source can be included as an optional object in the JSON file.
+
+Example configuration file:
+```json
+{
+  "github": {
+    "issue": "ioki-mobility/summaraizer/1"
+  },
+  "reddit": {
+    "post": "/r/generativeAI/comments/1giro2l/how_does_generative_ai_compare_to_platforms_like/"
+  },
+  "ollama": {
+    "model": "llama3.2:3b"
+  },
+  "openai": {
+    "token": "[TOKEN]",
+    "model": "gpt-4o-mini"
+  },
+  "anthropic": {
+    "token": "[TOKEN]",
+    "prompt": "Count the comments in the following discussion.\nEach comment is divided into a <comment> tag.\nHere is the discussion:\n{{ range $comment := . }}\n<comment>{{ $comment.Body }}</comment>\n{{end}}"
+  }
+}
+```
+
+You can also provide flags via environment variables.
+The env. variables should have a prefix of `SUMMARAIZER_` and the provider/source name in uppercase,
+followed by the flag name in uppercase and separated by an underscore.
+
+For example
+```bash
+export SUMMARAIZER_GITHUB_ISSUE=ioki-mobility/summaraizer/1
+export SUMMARAIZER_OPENAI_TOKEN=API-TOKEN
+
+// The following command will use the environment variables
+summaraizer github | summaraizer openai
+```
+
+A combination of both (config file and env. variables) is also possible of course:
+```bash
+cat config.json
+{
+  "google": {
+    "model": "gemini-1.5-pro"
+  },
+  "github": {
+    "issue": "ioki-mobility/summaraizer/1"
+  }
+}
+
+summaraizer github | SUMMARAIZER_GOOGLE_TOKEN=API-TOKEN summaraizer google
+```
+
+The CLi searches in the following directories for the configuration file:
+* `.` (current directory)
+* `$HOME/.config/summaraizer/config.json`
+* `$HOME/.summaraizer/config.json` 
+
+### Tips and tricks
+
+#### Custom source
 
 Using a provider to summarize from a custom¹ source:
 ```bash 
@@ -84,7 +151,7 @@ echo '[{"author": "Author1", "body": "I like to"}, {"author": "Author2", "body":
 
 ¹: Custom source means that you can provide your own comments in the JSON format.
 
-**Custom prompt**
+#### Custom prompt
 
 Customize the prompt to fit your needs, using Go templates:
 ```bash
