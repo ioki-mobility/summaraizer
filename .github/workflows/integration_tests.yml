@@ -21,6 +21,23 @@ jobs:
       - name: Fetch github issue
         run: go run cmd/summaraizer/summaraizer.go github --issue ioki-mobility/summaraizer/11
 
+  fetchGitHubIssueConfigFile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Write config file
+        run: |
+          echo '{ "github": { "issue": "ioki-mobility/summaraizer/11" } }' > config.json
+
+      - name: Fetch github issue
+        run: go run cmd/summaraizer/summaraizer.go github
+
   summarizeOllama:
     runs-on: ubuntu-latest
     steps:
