@@ -49,9 +49,6 @@ summaraizer github --issue ioki-mobility/summaraizer/1 --token <token>`,
 
 	cmd.Flags().String(flagIssue, "", "The GitHub issue to summarize. Use the format owner/repo/issue_number.")
 	cmd.MarkFlagRequired(flagIssue)
-	if issueConfig := c.GetString("github.issue"); issueConfig != "" {
-		cmd.Flags().Set(flagIssue, issueConfig)
-	}
 
 	cmd.Flags().String(flagToken, "", "The GitHub token. Only required for private repositories.")
 	if tokenConfig := c.GetString("github.token"); tokenConfig != "" {
@@ -81,9 +78,6 @@ Note that we only fetch the top-level comments. Nested comments are ignored.`,
 
 	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path.")
 	cmd.MarkFlagRequired(flagPost)
-	if postConfig := c.GetString("reddit.post"); postConfig != "" {
-		cmd.Flags().Set(flagPost, postConfig)
-	}
 
 	return cmd
 }
@@ -120,9 +114,6 @@ summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token> --url htt
 
 	cmd.Flags().String(flagIssue, "", "The GitLab issue to summarize. Use the format owner/repo/issue_number.")
 	cmd.MarkFlagRequired(flagIssue)
-	if issueConfig := c.GetString("gitlab.issue"); issueConfig != "" {
-		cmd.Flags().Set(flagIssue, issueConfig)
-	}
 
 	cmd.Flags().String(flagToken, "", "The GitLab token.")
 	cmd.MarkFlagRequired(flagToken)
@@ -170,15 +161,9 @@ You can get the channel ID and the timestamp from the URL of the thread.`,
 
 	cmd.Flags().String(flagChannel, "", "The channel ID of the Slack thread.")
 	cmd.MarkFlagRequired(flagChannel)
-	if channelConfig := c.GetString("slack.channel"); channelConfig != "" {
-		cmd.Flags().Set(flagChannel, channelConfig)
-	}
 
 	cmd.Flags().String(flagTs, "", "The timestamp of the Slack thread.")
 	cmd.MarkFlagRequired(flagTs)
-	if tsConfig := c.GetString("slack.ts"); tsConfig != "" {
-		cmd.Flags().Set(flagTs, tsConfig)
-	}
 
 	return cmd
 }

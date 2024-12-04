@@ -79,8 +79,8 @@ Each source and provider has a unique set of flags.
 Some flags are required, while others are optional. 
 If you do not provide the required flags, you will be prompted to enter them.
 
-Alternatively, you can specify all flags (both required and optional) 
-in a configuration file named config.yml. 
+Alternatively, you can specify app flags (both required and optional) 
+in a configuration file named `config.yml`.
 The JSON format uses the same key names as the flag names,
 and each provider or source can be included as an optional object in the JSON file.
 
@@ -88,10 +88,7 @@ Example configuration file:
 ```json
 {
   "github": {
-    "issue": "ioki-mobility/summaraizer/1"
-  },
-  "reddit": {
-    "post": "/r/generativeAI/comments/1giro2l/how_does_generative_ai_compare_to_platforms_like/"
+    "token": "[TOKEN]"
   },
   "ollama": {
     "model": "llama3.2:3b"
@@ -101,7 +98,6 @@ Example configuration file:
     "model": "gpt-4o-mini"
   },
   "anthropic": {
-    "token": "[TOKEN]",
     "prompt": "Count the comments in the following discussion.\nEach comment is divided into a <comment> tag.\nHere is the discussion:\n{{ range $comment := . }}\n<comment>{{ $comment.Body }}</comment>\n{{end}}"
   }
 }
@@ -113,8 +109,8 @@ followed by the flag name in uppercase and separated by an underscore.
 
 For example
 ```bash
-export SUMMARAIZER_GITHUB_ISSUE=ioki-mobility/summaraizer/1
-export SUMMARAIZER_OPENAI_TOKEN=API-TOKEN
+export SUMMARAIZER_GITHUB_TOKEN=[TOKEN]
+export SUMMARAIZER_OPENAI_TOKEN=[API-TOKEN]
 
 // The following command will use the environment variables
 summaraizer github | summaraizer openai
@@ -124,15 +120,17 @@ A combination of both (config file and env. variables) is also possible of cours
 ```bash
 cat config.json
 {
+  "gitlab": {
+    "url": "https://gitlab.example.com",
+  },
   "google": {
     "model": "gemini-1.5-pro"
-  },
-  "github": {
-    "issue": "ioki-mobility/summaraizer/1"
   }
 }
 
-summaraizer github | SUMMARAIZER_GOOGLE_TOKEN=API-TOKEN summaraizer google
+export SUMMARAIZER_GOOGLE_TOKEN=[API-TOKEN]
+
+summaraizer gitlab --issue ioki-mobility/issue/1 | summaraizer google
 ```
 
 The CLi searches in the following directories for the configuration file:
