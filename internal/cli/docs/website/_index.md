@@ -80,7 +80,7 @@ Some flags are required, while others are optional.
 If you do not provide the required flags, you will be prompted to enter them.
 
 Alternatively, you can specify app flags (both required and optional) 
-in a configuration file named `config.yml`.
+in a configuration file named `config.json`.
 The JSON format uses the same key names as the flag names,
 and each provider or source can be included as an optional object in the JSON file.
 
