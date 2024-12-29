@@ -21,6 +21,29 @@ jobs:
       - name: Fetch github issue
         run: go run cmd/summaraizer/summaraizer.go github --issue ioki-mobility/summaraizer/11
 
+  fetchGitHubIssueConfigFile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Write config file
+        run: |
+          echo '{ "github": { "token": "${{ secrets.GITHUB_TOKEN }}" } }' > config.json
+
+      - name: Fetch github issue
+        run: |
+          result=$(go run cmd/summaraizer/summaraizer.go github --issue ioki-mobility/summaraizer/1)
+          if [ "$result" = '[{"Author":"","Body":""}]' ]; then
+            echo "Error: Empty result"
+            exit 1
+          fi
+          echo "$result"
+
   summarizeOllama:
     runs-on: ubuntu-latest
     steps:

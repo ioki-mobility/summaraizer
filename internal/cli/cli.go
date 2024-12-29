@@ -15,12 +15,13 @@ func NewRootCmd() *cobra.Command {
 		Short: "Summarizes comments",
 		Long:  "Summarizes comments from a variety of sources using AI models from different providers.",
 	}
-	rootCmd.AddCommand(githubCmd(), redditCmd(), gitlabCmd(), slackCmd())
-	rootCmd.AddCommand(ollamaCmd(), openaiCmd(), anthropicCmd(), googleCmd())
+	c := newConfig()
+	rootCmd.AddCommand(githubCmd(c), redditCmd(), gitlabCmd(c), slackCmd(c))
+	rootCmd.AddCommand(ollamaCmd(c), openaiCmd(c), anthropicCmd(c), googleCmd(c))
 	return rootCmd
 }
 
-func githubCmd() *cobra.Command {
+func githubCmd(c *config) *cobra.Command {
 	flagIssue := "issue"
 	flagToken := "token"
 	var cmd = &cobra.Command{
@@ -45,9 +46,14 @@ summaraizer github --issue ioki-mobility/summaraizer/1 --token <token>`,
 			return fetch(s)
 		},
 	}
+
 	cmd.Flags().String(flagIssue, "", "The GitHub issue to summarize. Use the format owner/repo/issue_number.")
 	cmd.MarkFlagRequired(flagIssue)
+
 	cmd.Flags().String(flagToken, "", "The GitHub token. Only required for private repositories.")
+	if tokenConfig := c.GitHub.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
 
 	return cmd
 }
@@ -69,12 +75,14 @@ Note that we only fetch the top-level comments. Nested comments are ignored.`,
 			return fetch(s)
 		},
 	}
+
 	cmd.Flags().String(flagPost, "", "The Reddit post to summarize. Use the URL path.")
 	cmd.MarkFlagRequired(flagPost)
+
 	return cmd
 }
 
-func gitlabCmd() *cobra.Command {
+func gitlabCmd(c *config) *cobra.Command {
 	flagIssue := "issue"
 	flagToken := "token"
 	flagUrl := "url"
@@ -103,16 +111,25 @@ summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token> --url htt
 			return fetch(s)
 		},
 	}
+
 	cmd.Flags().String(flagIssue, "", "The GitLab issue to summarize. Use the format owner/repo/issue_number.")
 	cmd.MarkFlagRequired(flagIssue)
+
 	cmd.Flags().String(flagToken, "", "The GitLab token.")
 	cmd.MarkFlagRequired(flagToken)
+	if tokenConfig := c.GitLab.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
+
 	cmd.Flags().String(flagUrl, "https://gitlab.com", "The URL of the GitLab instance.")
+	if urlConfig := c.GitLab.Url; urlConfig != "" {
+		cmd.Flags().Set(flagUrl, urlConfig)
+	}
 
 	return cmd
 }
 
-func slackCmd() *cobra.Command {
+func slackCmd(c *config) *cobra.Command {
 	flagToken := "token"
 	flagChannel := "channel"
 	flagTs := "ts"
@@ -135,10 +152,16 @@ You can get the channel ID and the timestamp from the URL of the thread.`,
 			return fetch(s)
 		},
 	}
+
 	cmd.Flags().String(flagToken, "", "The Slack token.")
 	cmd.MarkFlagRequired(flagToken)
+	if tokenConfig := c.Slack.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
+
 	cmd.Flags().String(flagChannel, "", "The channel ID of the Slack thread.")
 	cmd.MarkFlagRequired(flagChannel)
+
 	cmd.Flags().String(flagTs, "", "The timestamp of the Slack thread.")
 	cmd.MarkFlagRequired(flagTs)
 
@@ -150,7 +173,7 @@ const (
 	aiFlagPrompt string = "prompt"
 )
 
-func ollamaCmd() *cobra.Command {
+func ollamaCmd(c *config) *cobra.Command {
 	flagUrl := "url"
 	var cmd = &cobra.Command{
 		Use:   "ollama",
@@ -174,13 +197,26 @@ summaraizer ollama --model llama3.2:3b`,
 			return summarize(p)
 		},
 	}
+
 	cmd.Flags().String(aiFlagModel, "gemma:2b", "The AI model to use")
+	if modelConfig := c.Ollama.Model; modelConfig != "" {
+		cmd.Flags().Set(aiFlagModel, modelConfig)
+	}
+
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	if promptConfig := c.Ollama.Prompt; promptConfig != "" {
+		cmd.Flags().Set(aiFlagPrompt, promptConfig)
+	}
+
 	cmd.Flags().String(flagUrl, "http://localhost:11434", "The URl where ollama is accessible")
+	if urlConfig := c.Ollama.Url; urlConfig != "" {
+		cmd.Flags().Set(flagUrl, urlConfig)
+	}
+
 	return cmd
 }
 
-func openaiCmd() *cobra.Command {
+func openaiCmd(c *config) *cobra.Command {
 	flagToken := "token"
 	cmd := &cobra.Command{
 		Use:   "openai",
@@ -203,14 +239,27 @@ summaraizer openai --token <token> --model gpt4o-mini`,
 			return summarize(p)
 		},
 	}
+
 	cmd.Flags().String(aiFlagModel, "gpt-3.5-turbo", "The AI model to use")
+	if modelConfig := c.OpenAI.Model; modelConfig != "" {
+		cmd.Flags().Set(aiFlagModel, modelConfig)
+	}
+
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	if promptConfig := c.OpenAI.Prompt; promptConfig != "" {
+		cmd.Flags().Set(aiFlagPrompt, promptConfig)
+	}
+
 	cmd.Flags().String(flagToken, "", "The API Token for OpenAI")
 	cmd.MarkFlagRequired(flagToken)
+	if tokenConfig := c.OpenAI.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
+
 	return cmd
 }
 
-func anthropicCmd() *cobra.Command {
+func anthropicCmd(c *config) *cobra.Command {
 	flagToken := "token"
 	cmd := &cobra.Command{
 		Use:   "anthropic",
@@ -233,14 +282,27 @@ summaraizer anthropic --token <token> --model claude-3-5-sonnet-20241022`,
 			return summarize(p)
 		},
 	}
+
 	cmd.Flags().String(aiFlagModel, "claude-3-haiku-20240307", "The AI model to use")
+	if modelConfig := c.Anthropic.Model; modelConfig != "" {
+		cmd.Flags().Set(aiFlagModel, modelConfig)
+	}
+
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	if promptConfig := c.Anthropic.Prompt; promptConfig != "" {
+		cmd.Flags().Set(aiFlagPrompt, promptConfig)
+	}
+
 	cmd.Flags().String(flagToken, "", "The API Token for Anthropic")
 	cmd.MarkFlagRequired(flagToken)
+	if tokenConfig := c.Anthropic.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
+
 	return cmd
 }
 
-func googleCmd() *cobra.Command {
+func googleCmd(c *config) *cobra.Command {
 	flagToken := "token"
 	cmd := &cobra.Command{
 		Use:   "google",
@@ -263,10 +325,23 @@ summaraizer google --token <token> --model gemini-1.5-pro-002`,
 			return summarize(p)
 		},
 	}
+
 	cmd.Flags().String(aiFlagModel, "gemini-1.5-flash-8b", "The AI model to use")
+	if modelConfig := c.Google.Model; modelConfig != "" {
+		cmd.Flags().Set(aiFlagModel, modelConfig)
+	}
+
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	if promptConfig := c.Google.Prompt; promptConfig != "" {
+		cmd.Flags().Set(aiFlagPrompt, promptConfig)
+	}
+
 	cmd.Flags().String(flagToken, "", "The API Token for Google")
 	cmd.MarkFlagRequired(flagToken)
+	if tokenConfig := c.Google.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
+
 	return cmd
 }
 
