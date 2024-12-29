@@ -10,14 +10,14 @@ import (
 )
 
 func NewRootCmd() *cobra.Command {
-	conf := newConfig()
 	var rootCmd = &cobra.Command{
 		Use:   "summaraizer",
 		Short: "Summarizes comments",
 		Long:  "Summarizes comments from a variety of sources using AI models from different providers.",
 	}
-	rootCmd.AddCommand(githubCmd(conf), redditCmd(conf), gitlabCmd(conf), slackCmd(conf))
-	rootCmd.AddCommand(ollamaCmd(conf), openaiCmd(conf), anthropicCmd(conf), googleCmd(conf))
+	c := newConfig()
+	rootCmd.AddCommand(githubCmd(c), redditCmd(), gitlabCmd(c), slackCmd(c))
+	rootCmd.AddCommand(ollamaCmd(c), openaiCmd(c), anthropicCmd(c), googleCmd(c))
 	return rootCmd
 }
 
@@ -51,14 +51,14 @@ summaraizer github --issue ioki-mobility/summaraizer/1 --token <token>`,
 	cmd.MarkFlagRequired(flagIssue)
 
 	cmd.Flags().String(flagToken, "", "The GitHub token. Only required for private repositories.")
-	if tokenConfig := c.GetString("github.token"); tokenConfig != "" {
+	if tokenConfig := c.GitHub.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 
 	return cmd
 }
 
-func redditCmd(c *config) *cobra.Command {
+func redditCmd() *cobra.Command {
 	flagPost := "post"
 	cmd := &cobra.Command{
 		Use:   "reddit",
@@ -117,12 +117,12 @@ summaraizer gitlab --issue ioki-mobility/summaraizer/1 --token <token> --url htt
 
 	cmd.Flags().String(flagToken, "", "The GitLab token.")
 	cmd.MarkFlagRequired(flagToken)
-	if tokenConfig := c.GetString("gitlab.token"); tokenConfig != "" {
+	if tokenConfig := c.GitLab.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 
 	cmd.Flags().String(flagUrl, "https://gitlab.com", "The URL of the GitLab instance.")
-	if urlConfig := c.GetString("gitlab.url"); urlConfig != "" {
+	if urlConfig := c.GitLab.Url; urlConfig != "" {
 		cmd.Flags().Set(flagUrl, urlConfig)
 	}
 
@@ -155,7 +155,7 @@ You can get the channel ID and the timestamp from the URL of the thread.`,
 
 	cmd.Flags().String(flagToken, "", "The Slack token.")
 	cmd.MarkFlagRequired(flagToken)
-	if tokenConfig := c.GetString("slack.token"); tokenConfig != "" {
+	if tokenConfig := c.Slack.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 
@@ -199,17 +199,17 @@ summaraizer ollama --model llama3.2:3b`,
 	}
 
 	cmd.Flags().String(aiFlagModel, "gemma:2b", "The AI model to use")
-	if modelConfig := c.GetString("ollama.model"); modelConfig != "" {
+	if modelConfig := c.Ollama.Model; modelConfig != "" {
 		cmd.Flags().Set(aiFlagModel, modelConfig)
 	}
 
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
-	if promptConfig := c.GetString("ollama.prompt"); promptConfig != "" {
+	if promptConfig := c.Ollama.Prompt; promptConfig != "" {
 		cmd.Flags().Set(aiFlagPrompt, promptConfig)
 	}
 
 	cmd.Flags().String(flagUrl, "http://localhost:11434", "The URl where ollama is accessible")
-	if urlConfig := c.GetString("ollama.url"); urlConfig != "" {
+	if urlConfig := c.Ollama.Url; urlConfig != "" {
 		cmd.Flags().Set(flagUrl, urlConfig)
 	}
 
@@ -241,18 +241,18 @@ summaraizer openai --token <token> --model gpt4o-mini`,
 	}
 
 	cmd.Flags().String(aiFlagModel, "gpt-3.5-turbo", "The AI model to use")
-	if modelConfig := c.GetString("openai.model"); modelConfig != "" {
+	if modelConfig := c.OpenAI.Model; modelConfig != "" {
 		cmd.Flags().Set(aiFlagModel, modelConfig)
 	}
 
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
-	if promptConfig := c.GetString("openai.prompt"); promptConfig != "" {
+	if promptConfig := c.OpenAI.Prompt; promptConfig != "" {
 		cmd.Flags().Set(aiFlagPrompt, promptConfig)
 	}
 
 	cmd.Flags().String(flagToken, "", "The API Token for OpenAI")
 	cmd.MarkFlagRequired(flagToken)
-	if tokenConfig := c.GetString("openai.token"); tokenConfig != "" {
+	if tokenConfig := c.OpenAI.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 
@@ -284,18 +284,18 @@ summaraizer anthropic --token <token> --model claude-3-5-sonnet-20241022`,
 	}
 
 	cmd.Flags().String(aiFlagModel, "claude-3-haiku-20240307", "The AI model to use")
-	if modelConfig := c.GetString("anthropic.model"); modelConfig != "" {
+	if modelConfig := c.Anthropic.Model; modelConfig != "" {
 		cmd.Flags().Set(aiFlagModel, modelConfig)
 	}
 
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
-	if promptConfig := c.GetString("anthropic.prompt"); promptConfig != "" {
+	if promptConfig := c.Anthropic.Prompt; promptConfig != "" {
 		cmd.Flags().Set(aiFlagPrompt, promptConfig)
 	}
 
 	cmd.Flags().String(flagToken, "", "The API Token for Anthropic")
 	cmd.MarkFlagRequired(flagToken)
-	if tokenConfig := c.GetString("anthropic.token"); tokenConfig != "" {
+	if tokenConfig := c.Anthropic.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 
@@ -327,18 +327,18 @@ summaraizer google --token <token> --model gemini-1.5-pro-002`,
 	}
 
 	cmd.Flags().String(aiFlagModel, "gemini-1.5-flash-8b", "The AI model to use")
-	if modelConfig := c.GetString("google.model"); modelConfig != "" {
+	if modelConfig := c.Google.Model; modelConfig != "" {
 		cmd.Flags().Set(aiFlagModel, modelConfig)
 	}
 
 	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
-	if promptConfig := c.GetString("google.prompt"); promptConfig != "" {
+	if promptConfig := c.Google.Prompt; promptConfig != "" {
 		cmd.Flags().Set(aiFlagPrompt, promptConfig)
 	}
 
 	cmd.Flags().String(flagToken, "", "The API Token for Google")
 	cmd.MarkFlagRequired(flagToken)
-	if tokenConfig := c.GetString("google.token"); tokenConfig != "" {
+	if tokenConfig := c.Google.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 

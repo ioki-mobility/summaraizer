@@ -113,7 +113,7 @@ export SUMMARAIZER_GITHUB_TOKEN=[TOKEN]
 export SUMMARAIZER_OPENAI_TOKEN=[API-TOKEN]
 
 // The following command will use the environment variables
-summaraizer github | summaraizer openai
+summaraizer github --issue ioki-mobility/summaraizer/1 | summaraizer openai
 ```
 
 A combination of both (config file and env. variables) is also possible of course:
@@ -133,10 +133,10 @@ export SUMMARAIZER_GOOGLE_TOKEN=[API-TOKEN]
 summaraizer gitlab --issue ioki-mobility/issue/1 | summaraizer google
 ```
 
-The CLi searches in the following directories for the configuration file:
+The CLi searches in the following directories for the configuration file (`config.json`):
 * `.` (current directory)
-* `$HOME/.config/summaraizer/config.json`
-* `$HOME/.summaraizer/config.json` 
+* `$HOME/.config/summaraizer`
+* `$HOME/.summaraizer` 
 
 ### Tips and tricks
 

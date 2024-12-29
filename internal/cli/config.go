@@ -11,7 +11,51 @@ import (
 )
 
 type config struct {
-	k *koanf.Koanf
+	GitHub gitHubConfig
+	GitLab gitLabConfig
+	Slack  slackConfig
+
+	Ollama    ollamaConfig
+	OpenAI    openAiConfig
+	Anthropic anthropicConfig
+	Google    googleConfig
+}
+
+type gitHubConfig struct {
+	Token string
+}
+
+type gitLabConfig struct {
+	Token string
+	Url   string
+}
+
+type slackConfig struct {
+	Token string
+}
+
+type ollamaConfig struct {
+	Url    string
+	Model  string
+	Prompt string
+}
+
+type openAiConfig struct {
+	Token  string
+	Model  string
+	Prompt string
+}
+
+type anthropicConfig struct {
+	Token  string
+	Model  string
+	Prompt string
+}
+
+type googleConfig struct {
+	Model  string
+	Token  string
+	Prompt string
 }
 
 func newConfig() *config {
@@ -23,11 +67,9 @@ func newConfig() *config {
 		envWithoutPrefix := strings.TrimPrefix(s, "SUMMARAIZER_")
 		return strings.Replace(strings.ToLower(envWithoutPrefix), "_", ".", -1)
 	}), nil)
-	return &config{
-		k: k,
+	var cfg config
+	if err := k.Unmarshal("", &cfg); err != nil {
+		return nil
 	}
-}
-
-func (c *config) GetString(path string) string {
-	return c.k.String(path)
+	return &cfg
 }
