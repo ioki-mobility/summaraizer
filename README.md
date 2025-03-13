@@ -4,7 +4,7 @@
 # summaraizer
 
 Summarizes comments from a variety of sources, such as GitHub issues, GitLab issues, Slack threads, Reddit threads, and more 
-using AI models from different providers, such as Ollama, Anthropic, OpenAI and Google.
+using AI models from different providers, such as Ollama, Anthropic, OpenAI, Mistral and Google.
 
 
 ## Usage
