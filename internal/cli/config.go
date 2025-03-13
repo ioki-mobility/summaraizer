@@ -18,6 +18,7 @@ type config struct {
 	Ollama    ollamaConfig
 	OpenAI    openAiConfig
 	Anthropic anthropicConfig
+	Mistral   mistralConfig
 	Google    googleConfig
 }
 
@@ -47,6 +48,12 @@ type openAiConfig struct {
 }
 
 type anthropicConfig struct {
+	Token  string
+	Model  string
+	Prompt string
+}
+
+type mistralConfig struct {
 	Token  string
 	Model  string
 	Prompt string

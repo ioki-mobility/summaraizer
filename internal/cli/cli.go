@@ -17,7 +17,7 @@ func NewRootCmd() *cobra.Command {
 	}
 	c := newConfig()
 	rootCmd.AddCommand(githubCmd(c), redditCmd(), gitlabCmd(c), slackCmd(c))
-	rootCmd.AddCommand(ollamaCmd(c), openaiCmd(c), anthropicCmd(c), googleCmd(c))
+	rootCmd.AddCommand(ollamaCmd(c), openaiCmd(c), anthropicCmd(c), mistralCmd(c), googleCmd(c))
 	return rootCmd
 }
 
@@ -296,6 +296,49 @@ summaraizer anthropic --token <token> --model claude-3-5-sonnet-20241022`,
 	cmd.Flags().String(flagToken, "", "The API Token for Anthropic")
 	cmd.MarkFlagRequired(flagToken)
 	if tokenConfig := c.Anthropic.Token; tokenConfig != "" {
+		cmd.Flags().Set(flagToken, tokenConfig)
+	}
+
+	return cmd
+}
+
+func mistralCmd(c *config) *cobra.Command {
+	flagToken := "token"
+	cmd := &cobra.Command{
+		Use:   "mistral",
+		Short: "Summarizes using Mistral",
+		Long: `To summarize using Mistral, you need to provide the API token.
+Optional flags are the AI model and the prompt. The prompt can make use of Go template functions.`,
+		Example: `summaraizer mistral --token <token>
+summaraizer mistral --token <token> --model pixtral-12b-2409`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			aiModel, _ := cmd.Flags().GetString(aiFlagModel)
+			aiPrompt, _ := cmd.Flags().GetString(aiFlagPrompt)
+			apiToken, _ := cmd.Flags().GetString(flagToken)
+
+			p := &summaraizer.Mistral{
+				Model:    aiModel,
+				Prompt:   aiPrompt,
+				ApiToken: apiToken,
+			}
+
+			return summarize(p)
+		},
+	}
+
+	cmd.Flags().String(aiFlagModel, "pixtral-12b-2409", "The AI model to use")
+	if modelConfig := c.Mistral.Model; modelConfig != "" {
+		cmd.Flags().Set(aiFlagModel, modelConfig)
+	}
+
+	cmd.Flags().String(aiFlagPrompt, defaultPromptTemplate, "The prompt to use for the AI model")
+	if promptConfig := c.Mistral.Prompt; promptConfig != "" {
+		cmd.Flags().Set(aiFlagPrompt, promptConfig)
+	}
+
+	cmd.Flags().String(flagToken, "", "The API Token for Mistral")
+	cmd.MarkFlagRequired(flagToken)
+	if tokenConfig := c.Mistral.Token; tokenConfig != "" {
 		cmd.Flags().Set(flagToken, tokenConfig)
 	}
 
